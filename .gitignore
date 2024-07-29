@@ -60,8 +60,12 @@ bazel-telegram-ios/*
 bazel-testlogs
 bazel-testlogs/*
 xcodeproj.bazelrc
+bazel-litegram
 */*.swp
 *.swp
 build-input/*
 **/*.pyc
 *.pyc
+
+.*~
+#*#
