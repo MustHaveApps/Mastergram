@@ -5,6 +5,61 @@ import Display
 import TelegramCore
 import TelegramPresentationData
 
+private final class ItemNodeAddButtonNode: HighlightableButtonNode {
+    static let size: CGSize = .init(width: 16, height: 16)
+    static let spacing: CGFloat = 16
+    
+    private let pressed: () -> Void
+    
+    private let contentImageNode: ASImageNode
+    
+    private var theme: PresentationTheme?
+    
+    init(pressed: @escaping () -> Void) {
+        self.pressed = pressed
+        
+        self.contentImageNode = ASImageNode()
+        
+        super.init()
+        
+        self.addSubnode(self.contentImageNode)
+        
+        self.addTarget(self, action: #selector(self.pressedEvent), forControlEvents: .touchUpInside)
+    }
+    
+    @objc private func pressedEvent() {
+        self.pressed()
+    }
+    
+    func update(theme: PresentationTheme) -> CGSize {
+        let size = ItemNodeAddButtonNode.size
+        if self.theme !== theme {
+            self.theme = theme
+            self.contentImageNode.image = generateImage(size, rotatedContext: { size, context in
+                let rect = CGRect(origin: .zero, size: size)
+                context.clear(rect)
+                context.setFillColor(theme.rootController.navigationBar.opaqueBackgroundColor.cgColor)
+                context.fillEllipse(in: rect)
+                context.setStrokeColor(theme.rootController.navigationBar.accentTextColor.cgColor)
+                context.setLineWidth(4)
+                context.setLineCap(.round)
+                
+                context.move(to: .init(x: rect.midX, y: rect.minY))
+                context.addLine(to: .init(x: rect.midX, y: rect.maxY))
+                context.strokePath()
+                
+                context.move(to: .init(x: rect.minX, y: rect.midY))
+                context.addLine(to: .init(x: rect.maxX, y: rect.midY))
+                context.strokePath()
+            })
+        }
+        
+        self.contentImageNode.frame = CGRect(origin: CGPoint(), size: size)
+        
+        return size
+    }
+}
+
 private final class ItemNodeDeleteButtonNode: HighlightableButtonNode {
     private let pressed: () -> Void
     
@@ -498,8 +553,10 @@ public enum ChatListFilterTabEntry: Equatable {
 }
 
 public final class ChatListFilterTabContainerNode: ASDisplayNode {
+    
     private let scrollNode: ASScrollNode
     private let selectedLineNode: ASImageNode
+    private let addButtonNode: ItemNodeAddButtonNode
     private var itemNodes: [ChatListFilterTabEntryId: ItemNode] = [:]
     
     public var tabSelected: ((ChatListFilterTabEntryId, Bool) -> Void)?
@@ -546,12 +603,14 @@ public final class ChatListFilterTabContainerNode: ASDisplayNode {
         }
     }
     
-    public override init() {
+    public init(onTapAddButton: @escaping () -> Void) {
         self.scrollNode = ASScrollNode()
         
         self.selectedLineNode = ASImageNode()
         self.selectedLineNode.displaysAsynchronously = false
         self.selectedLineNode.displayWithoutProcessing = true
+        
+        self.addButtonNode = .init(pressed: onTapAddButton)
         
         super.init()
         
@@ -566,6 +625,7 @@ public final class ChatListFilterTabContainerNode: ASDisplayNode {
         
         self.addSubnode(self.scrollNode)
         self.scrollNode.addSubnode(self.selectedLineNode)
+        self.scrollNode.addSubnode(self.addButtonNode)
         
         let reorderingGesture = ReorderingGestureRecognizer(shouldBegin: { [weak self] point in
             guard let strongSelf = self else {
@@ -880,8 +940,22 @@ public final class ChatListFilterTabContainerNode: ASDisplayNode {
         
         let minSpacing: CGFloat = 26.0
         
-        let resolvedSideInset: CGFloat = 16.0 + sideInset
+        var resolvedSideInset: CGFloat = 16.0 + sideInset
         var leftOffset: CGFloat = resolvedSideInset
+        
+        let addSize = addButtonNode.update(theme: presentationData.theme)
+        transition.updateFrame(
+            node: addButtonNode,
+            frame: .init(
+                origin: .init(
+                    x: leftOffset,
+                    y: scrollNode.frame.height / 2 - addSize.height / 2
+                ),
+                size: addSize
+            )
+        )
+        resolvedSideInset += addSize.width + ItemNodeAddButtonNode.spacing
+        leftOffset += addSize.width + ItemNodeAddButtonNode.spacing
         
         var longTitlesWidth: CGFloat = resolvedSideInset
         for i in 0 ..< tabSizes.count {
