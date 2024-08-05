@@ -461,10 +461,15 @@ public final class ChatListContainerNode: ASDisplayNode, ASGestureRecognizerDele
         
         self.applyItemNodeAsCurrent(id: .all, itemNode: itemNode)
         
-        let panRecognizer = InteractiveTransitionGestureRecognizer(target: self, action: #selector(self.panGesture(_:)), allowedDirections: { [weak self] _ in
+        let panRecognizer = InteractiveTransitionGestureRecognizer(target: self, action: #selector(self.panGesture(_:)), allowedDirections: { [weak self] position in
             guard let self, self.availableFilters.count > 1 || (self.controller?.isStoryPostingAvailable == true && !(self.context.sharedContext.callManager?.hasActiveCall ?? false)) else {
                 return []
             }
+            
+            if self.controller?.tabsNode.frame.contains(position) == true {
+                return []
+            }
+            
             guard case .chatList(.root) = self.location else {
                 return []
             }
@@ -917,8 +922,20 @@ public final class ChatListContainerNode: ASDisplayNode, ASGestureRecognizerDele
         
         self._validLayoutReady.set(.single(true))
         
-        transition.updateAlpha(node: self, alpha: isReorderingFilters ? 0.5 : 1.0)
-        self.isUserInteractionEnabled = !isReorderingFilters
+        if isReorderingFilters {
+            subnodes?.filter { $0 !== controller?.tabsNode }
+                .forEach {
+                    transition.updateAlpha(node: $0, alpha: 0.5)
+                    $0.isUserInteractionEnabled = false
+                }
+            self.panRecognizer?.isEnabled = false
+        } else {
+            subnodes?.forEach {
+                transition.updateAlpha(node: $0, alpha: 1)
+                $0.isUserInteractionEnabled = true
+            }
+            self.panRecognizer?.isEnabled = true
+        }
         
         if let _ = inlineNavigationLocation {
             transition.updateBackgroundColor(node: self, color: self.presentationData.theme.chatList.backgroundColor.mixedWith(self.presentationData.theme.chatList.pinnedItemBackgroundColor, alpha: inlineNavigationTransitionFraction))
@@ -927,6 +944,46 @@ public final class ChatListContainerNode: ASDisplayNode, ASGestureRecognizerDele
         }
         
         self.panRecognizer?.isEnabled = !isEditing
+        
+        if let controller {
+            transition.updateBackgroundColor(
+                node: controller.tabsNode,
+                color: self.presentationData.theme.rootController.navigationBar.opaqueBackgroundColor
+            )
+            transition.updateCornerRadius(
+                node: controller.tabsNode,
+                cornerRadius: 16
+            )
+            
+            if controller.tabsNode.supernode != nil {
+                controller.tabsNode.removeFromSupernode()
+            }
+                        
+            addSubnode(controller.tabsNode)
+
+            var tabBarHeight: CGFloat
+            var options: ContainerViewLayoutInsetOptions = []
+            if layout.metrics.widthClass == .regular {
+                options.insert(.input)
+            }
+            
+            let bottomInset: CGFloat = layout.insets(options: options).bottom
+            tabBarHeight = bottomInset
+            
+            transition.updateFrame(
+                node: controller.tabsNode,
+                frame: .init(
+                    origin: .init(
+                        x: controller.tabsHorizontalPadding,
+                        y: bounds.maxY - tabBarHeight - 8 - controller.tabsNode.frame.height
+                    ),
+                    size: .init(
+                        width: bounds.width - controller.tabsHorizontalPadding * 2,
+                        height: controller.tabsHeight
+                    )
+                )
+            )
+        }
         
         transition.updateFrame(layer: self.leftSeparatorLayer, frame: CGRect(origin: CGPoint(x: -UIScreenPixel, y: 0.0), size: CGSize(width: UIScreenPixel, height: layout.size.height)))
         
@@ -1311,8 +1368,6 @@ final class ChatListControllerNode: ASDisplayNode, ASGestureRecognizerDelegate {
         if let value = self.controller?.searchTabsNode {
             tabsNode = value
             tabsNodeIsSearch = true
-        } else if let value = self.controller?.tabsNode, self.controller?.hasTabs == true {
-            tabsNode = value
         }
         
         var effectiveStorySubscriptions: EngineStorySubscriptions?

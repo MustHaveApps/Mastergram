@@ -174,7 +174,9 @@ public final class PeerSelectionControllerImpl: ViewController, PeerSelectionCon
         if params.hasFilters {
             self._ready.set(.never())
             
-            self.tabContainerNode = ChatListFilterTabContainerNode()
+            self.tabContainerNode = ChatListFilterTabContainerNode(onTapAddButton: {
+                
+            })
             self.reloadFilters()
             
             self.peerSelectionNode.mainContainerNode?.currentItemFilterUpdated = { [weak self] filter, fraction, transition, force in
