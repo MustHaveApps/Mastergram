@@ -1366,6 +1366,8 @@ public final class ChatListNode: ListView {
         
         super.init()
         
+        self.bottomInset = 40
+        
         if case .internal = context.sharedContext.applicationBindings.appBuildType {
             //self.useMainQueueTransactions = true
         }

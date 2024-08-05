@@ -185,6 +185,8 @@ open class ListView: ASDisplayNode, ASScrollViewDelegate, ASGestureRecognizerDel
         }
     }
 
+    public final var bottomInset: CGFloat = 0
+    
     public final let scroller: ListViewScroller
     public private(set) final var visibleSize: CGSize = CGSize()
     public private(set) final var insets = UIEdgeInsets()
@@ -1231,7 +1233,7 @@ open class ListView: ASDisplayNode, ASScrollViewDelegate, ASGestureRecognizerDel
         }
         
         if bottomItemFound {
-            bottomItemEdge = self.itemNodes[self.itemNodes.count - 1].apparentFrame.maxY
+            bottomItemEdge = self.itemNodes[self.itemNodes.count - 1].apparentFrame.maxY + bottomInset
         } else {
             bottomItemEdge = self.visibleSize.height
         }
@@ -1646,7 +1648,7 @@ open class ListView: ASDisplayNode, ASScrollViewDelegate, ASGestureRecognizerDel
             
             if let index = self.itemNodes[self.itemNodes.count - 1].index, index == self.items.count - 1 {
                 bottomItemFound = true
-                bottomItemEdge = self.itemNodes[self.itemNodes.count - 1].apparentFrame.maxY
+                bottomItemEdge = self.itemNodes[self.itemNodes.count - 1].apparentFrame.maxY + bottomInset
             }
             
             topItemEdge -= effectiveInsets.top
