@@ -11935,6 +11935,7 @@ Sorry for the inconvenience.";
 "ChatList.Search.RecommendedChannelsEmpty.Title" = "No Channels Yet...";
 "ChatList.Search.RecommendedChannelsEmpty.Text" = "You are not currently subscribed to any channel.";
 
+
 "Notifications.Reactions" = "Reactions";
 "Notifications.Reactions.SubtitleStories" = "Stories";
 "Notifications.Reactions.SubtitleMessages" = "Messages";
@@ -12478,3 +12479,8 @@ Sorry for the inconvenience.";
 "Stars.SendStars.AmountPlaceholder" = "Stars Amount";
 "Stars.SendStars.AmountInfo" = "Send %@ or more to highlight your profile in the TOP 3 supporters of this message.";
 "Stars.SendStars.SendStars" = "Confirm and Send";
+
+// MARK: - Lite gram changes
+
+"ChatList.Apps" = "Apps";
+"ChatList.Wallet" = "Wallet";

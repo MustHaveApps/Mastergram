@@ -347,7 +347,7 @@ final class ContactsControllerNode: ASDisplayNode, ASGestureRecognizerDelegate {
             navigationBackTitle: nil,
             titleComponent: nil,
             chatListTitle: NetworkStatusTitle(text: title, activity: false, hasProxy: false, connectsViaProxy: false, isPasscodeSet: false, isManuallyLocked: false, peerStatus: nil),
-            leftButton: leftButton,
+            leftButtons: leftButton != nil ? [leftButton!] : [],
             rightButtons: rightButtons,
             backTitle: nil,
             backPressed: nil
