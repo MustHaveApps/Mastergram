@@ -774,7 +774,7 @@ final class QuickReplySetupScreenComponent: Component {
                 navigationBackTitle: nil,
                 titleComponent: nil,
                 chatListTitle: nil,
-                leftButton: isModal ? AnyComponentWithIdentity(id: "close", component: AnyComponent(NavigationButtonComponent(
+                leftButtons: isModal ? [AnyComponentWithIdentity(id: "close", component: AnyComponent(NavigationButtonComponent(
                     content: .text(title: closeTitle, isBold: false),
                     pressed: { [weak self] _ in
                         guard let self else {
@@ -784,7 +784,7 @@ final class QuickReplySetupScreenComponent: Component {
                             self.environment?.controller()?.dismiss()
                         }
                     }
-                ))) : nil,
+                )))] : [],
                 rightButtons: rightButtons,
                 backTitle: isModal ? nil : strings.Common_Back,
                 backPressed: { [weak self] in
