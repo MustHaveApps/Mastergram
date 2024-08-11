@@ -227,6 +227,25 @@ public final class TelegramRootController: NavigationController, TelegramRootCon
         accountSettingsController.parentController = self
         controllers.append(accountSettingsController)
         
+        tabBarController.cameraItemAndAction = (
+            UITabBarItem(title: "bot", image: nil, tag: 1),
+            { [weak self] in
+                guard let self else { return }
+                
+                self.context.sharedContext.openExternalUrl(
+                    context: self.context,
+                    urlContext: .generic,
+                    url: "https://t.me/GPT4Telegrambot",
+                    forceExternal: false,
+                    presentationData: self.presentationData,
+                    navigationController: tabBarController.currentController?.navigationController as? NavigationController,
+                    dismissInput: {
+                        tabBarController.currentController?.view.endEditing(true)
+                    }
+                )
+            }
+        )
+        
         tabBarController.setControllers(controllers, selectedIndex: restoreSettignsController != nil ? (controllers.count - 1) : (controllers.count - 2))
         
         self.contactsController = contactsController
