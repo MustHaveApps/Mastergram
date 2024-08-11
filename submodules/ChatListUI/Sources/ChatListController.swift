@@ -6051,14 +6051,65 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
     }
     
     func routeToTabsEditing() {
-        let controller = self.context.sharedContext.makeFilterSettingsController(
-            context: self.context,
-            modal: true,
-            scrollToTags: false,
-            dismissed: nil
-        )
+        let filtersWithCountsSignal = context.engine.peers.updatedChatListFilters()
+        |> distinctUntilChanged
+        |> mapToSignal { filters -> Signal<[(ChatListFilter, Int)], NoError> in
+            return .single(filters.map { filter -> (ChatListFilter, Int) in
+                return (filter, 0)
+            })
+        }
         
-        self.push(controller)
+        let pushControllerImpl: ((ViewController) -> Void)? = { [weak self] vc in
+            self?.push(vc)
+        }
+        
+        let filtersWithCounts = Promise<[(ChatListFilter, Int)]>()
+        filtersWithCounts.set(filtersWithCountsSignal)
+        
+        let _ = combineLatest(
+            queue: Queue.mainQueue(),
+            context.engine.data.get(
+                TelegramEngine.EngineData.Item.Peer.Peer(id: context.account.peerId),
+                TelegramEngine.EngineData.Item.Configuration.UserLimits(isPremium: false),
+                TelegramEngine.EngineData.Item.Configuration.UserLimits(isPremium: true)
+            ),
+            filtersWithCounts.get() |> take(1)
+        ).start(next: { [weak self] result, filters in
+            guard let self else { return }
+            
+            let (accountPeer, limits, premiumLimits) = result
+            let isPremium = accountPeer?.isPremium ?? false
+            
+            let filters = filters.filter { filter in
+                if case .allChats = filter.0 {
+                    return false
+                }
+                return true
+            }
+            
+            let limit = limits.maxFoldersCount
+            let premiumLimit = premiumLimits.maxFoldersCount
+            if filters.count >= premiumLimit {
+                let controller = PremiumLimitScreen(context: self.context, subject: .folders, count: Int32(filters.count), action: {
+                    return true
+                })
+                pushControllerImpl?(controller)
+                return
+            } else if filters.count >= limit && !isPremium {
+                var replaceImpl: ((ViewController) -> Void)?
+                let controller = PremiumLimitScreen(context: self.context, subject: .folders, count: Int32(filters.count), action: {
+                    let controller = PremiumIntroScreen(context: self.context, source: .folders)
+                    replaceImpl?(controller)
+                    return true
+                })
+                replaceImpl = { [weak controller] c in
+                    controller?.replace(with: c)
+                }
+                pushControllerImpl?(controller)
+                return
+            }
+            pushControllerImpl?(chatListFilterPresetController(context: context, currentPreset: nil, updated: { _ in }))
+        })
     }
     
     private func openBotAppFromURL(
