@@ -77,7 +77,7 @@ public final class ChatListHeaderComponent: Component {
         public let navigationBackTitle: String?
         public let titleComponent: AnyComponent<Empty>?
         public let chatListTitle: NetworkStatusTitle?
-        public let leftButton: AnyComponentWithIdentity<NavigationButtonComponentEnvironment>?
+        public let leftButtons: [AnyComponentWithIdentity<NavigationButtonComponentEnvironment>]
         public let rightButtons: [AnyComponentWithIdentity<NavigationButtonComponentEnvironment>]
         public let backTitle: String?
         public let backPressed: (() -> Void)?
@@ -87,7 +87,7 @@ public final class ChatListHeaderComponent: Component {
             navigationBackTitle: String?,
             titleComponent: AnyComponent<Empty>?,
             chatListTitle: NetworkStatusTitle?,
-            leftButton: AnyComponentWithIdentity<NavigationButtonComponentEnvironment>?,
+            leftButtons: [AnyComponentWithIdentity<NavigationButtonComponentEnvironment>],
             rightButtons: [AnyComponentWithIdentity<NavigationButtonComponentEnvironment>],
             backTitle: String?,
             backPressed: (() -> Void)?
@@ -96,7 +96,7 @@ public final class ChatListHeaderComponent: Component {
             self.navigationBackTitle = navigationBackTitle
             self.titleComponent = titleComponent
             self.chatListTitle = chatListTitle
-            self.leftButton = leftButton
+            self.leftButtons = leftButtons
             self.rightButtons = rightButtons
             self.backTitle = backTitle
             self.backPressed = backPressed
@@ -115,7 +115,7 @@ public final class ChatListHeaderComponent: Component {
             if lhs.chatListTitle != rhs.chatListTitle {
                 return false
             }
-            if lhs.leftButton != rhs.leftButton {
+            if lhs.leftButtons != rhs.leftButtons {
                 return false
             }
             if lhs.rightButtons != rhs.rightButtons {
@@ -519,7 +519,7 @@ public final class ChatListHeaderComponent: Component {
             }
             
             var validLeftButtons = Set<AnyHashable>()
-            if let leftButton = content.leftButton {
+            for leftButton in content.leftButtons {
                 validLeftButtons.insert(leftButton.id)
                 
                 var buttonTransition = transition
@@ -886,7 +886,7 @@ public final class ChatListHeaderComponent: Component {
                         navigationBackTitle: primaryContent.navigationBackTitle,
                         titleComponent: nil,
                         chatListTitle: nil,
-                        leftButton: primaryContent.leftButton,
+                        leftButtons: primaryContent.leftButtons,
                         rightButtons: primaryContent.rightButtons,
                         backTitle: primaryContent.backTitle,
                         backPressed: primaryContent.backPressed

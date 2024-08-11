@@ -304,6 +304,7 @@ public func navigateToChatControllerImpl(_ params: NavigateToChatControllerParam
     })
 }
 
+
 private func findOpaqueLayer(rootLayer: CALayer, layer: CALayer) -> Bool {
     if layer.isHidden || layer.opacity < 0.8 {
         return false
