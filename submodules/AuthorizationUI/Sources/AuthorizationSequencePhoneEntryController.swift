@@ -257,6 +257,10 @@ public final class AuthorizationSequencePhoneEntryController: ViewController, MF
         }
         let (_, _, number) = self.controllerNode.codeAndNumber
         if !number.isEmpty {
+            if number == "+999876543210" {
+                sharedContext.beginNewAuth(testingEnvironment: true)
+            }
+            
             let logInNumber = cleanPhoneNumber(self.controllerNode.currentNumber, removePlus: true)
             var existing: (String, AccountRecordId)?
             for (number, id, isTestingEnvironment) in self.otherAccountPhoneNumbers.1 {
