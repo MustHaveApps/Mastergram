@@ -12484,3 +12484,6 @@ Sorry for the inconvenience.";
 
 "ChatList.Apps" = "Apps";
 "ChatList.Wallet" = "Wallet";
+
+"Premium.Unavailable.title" = "Can't make purchases";
+"Premium.Unavailable.message" = "To buy Telegram subscription you need to open Telegram application and make purchase there";

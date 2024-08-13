@@ -1064,11 +1064,15 @@ extension ChatControllerImpl {
                                         let context = strongSelf.context
                                         var replaceImpl: ((ViewController) -> Void)?
                                         let controller = PremiumLimitScreen(context: context, subject: .files, count: 2, action: {
-                                            replaceImpl?(PremiumIntroScreen(context: context, source: .upload))
+                                            let premiumAlert = premiumAlertController(
+                                                context: strongSelf.context,
+                                                source: .upload
+                                            )
+                                            replaceImpl?(premiumAlert)
                                             return true
                                         })
                                         replaceImpl = { [weak controller] c in
-                                            controller?.replace(with: c)
+                                            controller?.present(c, in: .window(.root))
                                         }
                                         strongSelf.push(controller)
                                         return

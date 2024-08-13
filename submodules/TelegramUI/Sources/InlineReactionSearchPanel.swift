@@ -158,8 +158,11 @@ private final class InlineReactionSearchStickersNode: ASDisplayNode, ASScrollVie
                                                     strongSelf.getControllerInteraction?()?.presentGlobalOverlayController(UndoOverlayController(presentationData: presentationData, content: .sticker(context: strongSelf.context, file: item.file, loop: true, title: strongSelf.strings.Premium_MaxFavedStickersTitle("\(limit)").string, text: text, undoText: nil, customAction: nil), elevatedLayout: false, action: { [weak self] action in
                                                         if let strongSelf = self {
                                                             if case .info = action {
-                                                                let controller = PremiumIntroScreen(context: strongSelf.context, source: .savedStickers)
-                                                                strongSelf.getControllerInteraction?()?.navigationController()?.pushViewController(controller)
+                                                                let premiumAlert = premiumAlertController(
+                                                                    context: strongSelf.context,
+                                                                    source: .savedStickers
+                                                                )
+                                                                strongSelf.getControllerInteraction?()?.navigationController()?.present(premiumAlert, animated: true)
                                                                 return true
                                                             }
                                                         }
@@ -203,8 +206,11 @@ private final class InlineReactionSearchStickersNode: ASDisplayNode, ASScrollVie
                                 guard let strongSelf = self, let controllerInteraction = strongSelf.getControllerInteraction?() else {
                                     return
                                 }
-                                let controller = PremiumIntroScreen(context: strongSelf.context, source: .stickers)
-                                controllerInteraction.navigationController()?.pushViewController(controller)
+                                let premiumAlert = premiumAlertController(
+                                    context: strongSelf.context,
+                                    source: .stickers
+                                )
+                                controllerInteraction.navigationController()?.present(premiumAlert, animated: true)
                             }))
                         } else {
                             return nil

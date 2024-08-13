@@ -184,8 +184,12 @@ final class HorizontalListContextResultsChatInputContextPanelNode: ChatInputCont
                                 guard let strongSelf = self else {
                                     return
                                 }
-                                let controller = PremiumIntroScreen(context: strongSelf.context, source: .stickers)
-                                strongSelf.interfaceInteraction?.getNavigationController()?.pushViewController(controller)
+                                
+                                let premiumAlert = premiumAlertController(
+                                    context: strongSelf.context,
+                                    source: .stickers
+                                )
+                                strongSelf.interfaceInteraction?.getNavigationController()?.present(premiumAlert, animated: true)
                             }))
                         } else {
                             var menuItems: [ContextMenuItem] = []
@@ -217,8 +221,11 @@ final class HorizontalListContextResultsChatInputContextPanelNode: ChatInputCont
                                                 }
                                                 interfaceInteraction?.presentController(UndoOverlayController(presentationData: presentationData, content: .universal(animation: "anim_gif", scale: 0.075, colors: [:], title: presentationData.strings.Premium_MaxSavedGifsTitle("\(limit)").string, text: text, customUndoText: nil, timeout: nil), elevatedLayout: false, animateInAsReplacement: false, action: { action in
                                                     if case .info = action {
-                                                        let controller = PremiumIntroScreen(context: context, source: .savedGifs)
-                                                        interfaceInteraction?.getNavigationController()?.pushViewController(controller)
+                                                        let premiumAlert = premiumAlertController(
+                                                            context: context,
+                                                            source: .savedGifs
+                                                        )
+                                                        interfaceInteraction?.getNavigationController()?.present(premiumAlert, animated: true)
                                                         return true
                                                     }
                                                     return false

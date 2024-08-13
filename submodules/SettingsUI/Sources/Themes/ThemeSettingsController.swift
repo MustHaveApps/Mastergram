@@ -560,11 +560,14 @@ public func themeSettingsController(context: AccountContext, focusOnItemTag: The
             if icon.isPremium && !isPremium {
                 var replaceImpl: ((ViewController) -> Void)?
                 let controller = PremiumDemoScreen(context: context, subject: .appIcons, source: .other, action: {
-                    let controller = PremiumIntroScreen(context: context, source: .appIcons)
-                    replaceImpl?(controller)
+                    let premiumAlert = premiumAlertController(
+                        context: context,
+                        source: .appIcons
+                    )
+                    replaceImpl?(premiumAlert)
                 })
                 replaceImpl = { [weak controller] c in
-                    controller?.replace(with: c)
+                    controller?.present(c, in: .window(.root))
                 }
                 pushControllerImpl?(controller)
             } else {

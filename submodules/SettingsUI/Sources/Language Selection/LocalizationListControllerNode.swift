@@ -591,11 +591,14 @@ final class LocalizationListControllerNode: ViewControllerTracingNode {
             }, selectLocalization: { [weak self] info in self?.selectLocalization(info) }, setItemWithRevealedOptions: setItemWithRevealedOptions, removeItem: removeItem, showPremiumInfo: {
                 var replaceImpl: ((ViewController) -> Void)?
                 let controller = PremiumDemoScreen(context: context, subject: .translation, action: {
-                    let controller = PremiumIntroScreen(context: context, source: .translation)
-                    replaceImpl?(controller)
+                    let premiumAlert = premiumAlertController(
+                        context: context,
+                        source: .translation
+                    )
+                    replaceImpl?(premiumAlert)                    
                 })
                 replaceImpl = { [weak controller] c in
-                    controller?.replace(with: c)
+                    controller?.present(c, in: .window(.root))
                 }
                 strongSelf.push(controller)
             }, firstTime: previousEntriesAndPresentationData == nil, isLoading: entries.isEmpty, forceUpdate: previousEntriesAndPresentationData?.1 !== presentationData.theme || previousEntriesAndPresentationData?.2 !== presentationData.strings, animated: (previousEntriesAndPresentationData?.0.count ?? 0) != entries.count, crossfade: (previousState == nil || previousState!.availableOfficialLocalizations.isEmpty) != localizationListState.availableOfficialLocalizations.isEmpty)

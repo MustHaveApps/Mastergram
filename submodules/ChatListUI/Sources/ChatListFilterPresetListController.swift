@@ -374,12 +374,15 @@ public func chatListFilterPresetListController(context: AccountContext, mode: Ch
             } else if filters.count >= limit && !isPremium {
                 var replaceImpl: ((ViewController) -> Void)?
                 let controller = PremiumLimitScreen(context: context, subject: .folders, count: Int32(filters.count), action: {
-                    let controller = PremiumIntroScreen(context: context, source: .folders)
-                    replaceImpl?(controller)
+                    let premiumAlert = premiumAlertController(
+                        context: context,
+                        source: .folders
+                    )
+                    replaceImpl?(premiumAlert)
                     return true
                 })
                 replaceImpl = { [weak controller] c in
-                    controller?.replace(with: c)
+                    controller?.present(c, in: .window(.root))
                 }
                 pushControllerImpl?(controller)
                 return
@@ -426,12 +429,15 @@ public func chatListFilterPresetListController(context: AccountContext, mode: Ch
             } else if filters.count >= limit && !isPremium {
                 var replaceImpl: ((ViewController) -> Void)?
                 let controller = PremiumLimitScreen(context: context, subject: .folders, count: Int32(filters.count), action: {
-                    let controller = PremiumIntroScreen(context: context, source: .folders)
-                    replaceImpl?(controller)
+                    let premiumAlert = premiumAlertController(
+                        context: context,
+                        source: .folders
+                    )
+                    replaceImpl?(premiumAlert)
                     return true
                 })
                 replaceImpl = { [weak controller] c in
-                    controller?.replace(with: c)
+                    controller?.present(c, in: .window(.root))
                 }
                 pushControllerImpl?(controller)
                 return
@@ -787,7 +793,11 @@ public func chatListFilterPresetListController(context: AccountContext, mode: Ch
                 let presentationData = context.sharedContext.currentPresentationData.with { $0 }
                 presentControllerImpl?(UndoOverlayController(presentationData: presentationData, content: .universal(animation: "anim_reorder", scale: 0.05, colors: [:], title: nil, text: presentationData.strings.ChatListFolderSettings_SubscribeToMoveAll, customUndoText: presentationData.strings.ChatListFolderSettings_SubscribeToMoveAllAction, timeout: nil), elevatedLayout: false, animateInAsReplacement: false, action: { action in
                     if case .undo = action {
-                        pushControllerImpl?(PremiumIntroScreen(context: context, source: .folders))
+                        let premiumAlert = premiumAlertController(
+                            context: context,
+                            source: .folders
+                        )
+                        presentControllerImpl?(premiumAlert)
                     }
                     return false })
                 )

@@ -1160,12 +1160,13 @@ public final class ChatControllerImpl: TelegramBaseController, ChatController, G
                             }
                             strongSelf.push(wallpaperPreviewController)
                             return true
-                        case let .giftPremium(_, _, duration, _, _):
+                        case .giftPremium:
                             strongSelf.chatDisplayNode.dismissInput()
-                            let fromPeerId: PeerId = message.author?.id == strongSelf.context.account.peerId ? strongSelf.context.account.peerId : message.id.peerId
-                            let toPeerId: PeerId = message.author?.id == strongSelf.context.account.peerId ? message.id.peerId : strongSelf.context.account.peerId
-                            let controller = PremiumIntroScreen(context: strongSelf.context, source: .gift(from: fromPeerId, to: toPeerId, duration: duration, giftCode: nil))
-                            strongSelf.push(controller)
+                            let premiumAlert = premiumAlertController(
+                                context: strongSelf.context,
+                                source: .settings
+                            )
+                            strongSelf.present(premiumAlert, in: .window(.root))
                             return true
                         case let .giftCode(slug, _, _, _, _, _, _, _, _):
                             strongSelf.openResolved(result: .premiumGiftCode(slug: slug), sourceMessageId: message.id, progress: params.progress)
@@ -4158,11 +4159,11 @@ public final class ChatControllerImpl: TelegramBaseController, ChatController, G
                 guard let self else {
                     return
                 }
-                let controller = PremiumIntroScreen(context: self.context, source: source)
-                controller.sourceView = sourceView
-                controller.containerView = self.navigationController?.view
-                controller.animationColor = self.context.peerNameColors.get(nameColor, dark: self.presentationData.theme.overallDarkAppearance).main
-                self.push(controller)
+                let premiumAlert = premiumAlertController(
+                    context: self.context,
+                    source: source
+                )
+                self.present(premiumAlert, in: .window(.root))
             })
             
         }, openRecommendedChannelContextMenu: { [weak self] peer, sourceView, gesture in

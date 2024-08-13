@@ -86,8 +86,11 @@ extension ChatControllerImpl {
                             return false
                         }
                         if case .undo = action {
-                            let premiumController = PremiumIntroScreen(context: self.context, source: .settings)
-                            controller.push(premiumController)
+                            let premiumAlert = premiumAlertController(
+                                context: self.context,
+                                source: .settings
+                            )
+                            controller.present(premiumAlert, in: .window(.root))
                         }
                         return false
                     }), in: .current)

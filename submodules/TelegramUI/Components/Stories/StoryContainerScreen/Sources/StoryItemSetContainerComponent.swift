@@ -4689,14 +4689,17 @@ public final class StoryItemSetContainerComponent: Component {
                             let context = component.context
                             var replaceImpl: ((ViewController) -> Void)?
                             let controller = PremiumDemoScreen(context: context, subject: .uniqueReactions, forceDark: true, action: {
-                                let controller = PremiumIntroScreen(context: context, source: .reactions)
-                                replaceImpl?(controller)
+                                let premiumAlert = premiumAlertController(
+                                    context: context,
+                                    source: .reactions
+                                )
+                                replaceImpl?(premiumAlert)
                             })
                             controller.disposed = { [weak self] in
                                 self?.updateIsProgressPaused()
                             }
                             replaceImpl = { [weak controller] c in
-                                controller?.replace(with: c)
+                                controller?.present(c, in: .window(.root))
                             }
                             component.controller()?.push(controller)
                             return
@@ -4711,14 +4714,17 @@ public final class StoryItemSetContainerComponent: Component {
                             let context = component.context
                             var replaceImpl: ((ViewController) -> Void)?
                             let controller = PremiumDemoScreen(context: context, subject: .uniqueReactions, forceDark: true, action: {
-                                let controller = PremiumIntroScreen(context: context, source: .reactions)
-                                replaceImpl?(controller)
+                                let premiumAlert = premiumAlertController(
+                                    context: context,
+                                    source: .reactions
+                                )
+                                replaceImpl?(premiumAlert)
                             })
                             controller.disposed = { [weak self] in
                                 self?.updateIsProgressPaused()
                             }
                             replaceImpl = { [weak controller] c in
-                                controller?.replace(with: c)
+                                controller?.present(c, in: .window(.root))
                             }
                             component.controller()?.push(controller)
                         }), elevatedLayout: false, animateInAsReplacement: false, blurred: true, action: { _ in true })
@@ -5470,21 +5476,13 @@ public final class StoryItemSetContainerComponent: Component {
                 return
             }
 
-            let controller = PremiumIntroScreen(context: component.context, source: .settings, forceDark: true)
-            self.sendMessageContext.actionSheet = controller
-            controller.wasDismissed = { [weak self, weak controller] in
-                guard let self else {
-                    return
-                }
-                
-                if self.sendMessageContext.actionSheet === controller {
-                    self.sendMessageContext.actionSheet = nil
-                }
-                self.updateIsProgressPaused()
-            }
+            let premiumAlert = premiumAlertController(
+                context: component.context,
+                source: .settings
+            )
             
             self.updateIsProgressPaused()
-            component.controller()?.push(controller)
+            component.controller()?.present(premiumAlert, in: .window(.root))
         }
         
         private func presentBoostToUnrestrict() {

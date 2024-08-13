@@ -1499,12 +1499,15 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
                 let context = strongSelf.context
                 var replaceImpl: ((ViewController) -> Void)?
                 let controller = PremiumLimitScreen(context: context, subject: .folders, count: strongSelf.tabContainerNode.filtersCount, action: {
-                    let controller = PremiumIntroScreen(context: context, source: .folders)
-                    replaceImpl?(controller)
+                    let premiumAlert = premiumAlertController(
+                        context: strongSelf.context,
+                        source: .folders
+                    )
+                    replaceImpl?(premiumAlert)
                     return true
                 })
                 replaceImpl = { [weak controller] c in
-                    controller?.replace(with: c)
+                    controller?.present(c, animated: true)
                 }
                 strongSelf.push(controller)
             } else {
@@ -1524,11 +1527,14 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
                         let context = strongSelf.context
                         var replaceImpl: ((ViewController) -> Void)?
                         let controller = PremiumDemoScreen(context: context, subject: .advancedChatManagement, action: {
-                            let controller = PremiumIntroScreen(context: context, source: .folders)
-                            replaceImpl?(controller)
+                            let premiumAlert = premiumAlertController(
+                                context: strongSelf.context,
+                                source: .folders
+                            )
+                            replaceImpl?(premiumAlert)
                         })
                         replaceImpl = { [weak controller] c in
-                            controller?.replace(with: c)
+                            controller?.present(c, in: .window(.root))
                         }
                         strongSelf.push(controller)
                     }
@@ -1615,12 +1621,15 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
                                 let context = strongSelf.context
                                 var replaceImpl: ((ViewController) -> Void)?
                                 let controller = PremiumLimitScreen(context: context, subject: .folders, count: strongSelf.tabContainerNode.filtersCount, action: {
-                                    let controller = PremiumIntroScreen(context: context, source: .folders)
-                                    replaceImpl?(controller)
+                                    let premiumAlert = premiumAlertController(
+                                        context: strongSelf.context,
+                                        source: .folders
+                                    )
+                                    replaceImpl?(premiumAlert)
                                     return true
                                 })
                                 replaceImpl = { [weak controller] c in
-                                    controller?.replace(with: c)
+                                    controller?.present(c, in: .window(.root))
                                 }
                                 strongSelf.push(controller)
                             } else {
@@ -1659,12 +1668,15 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
                                     let context = strongSelf.context
                                     var replaceImpl: ((ViewController) -> Void)?
                                     let controller = PremiumLimitScreen(context: context, subject: .folders, count: strongSelf.tabContainerNode.filtersCount, action: {
-                                        let controller = PremiumIntroScreen(context: context, source: .folders)
-                                        replaceImpl?(controller)
+                                        let premiumAlert = premiumAlertController(
+                                            context: strongSelf.context,
+                                            source: .folders
+                                        )
+                                        replaceImpl?(premiumAlert)
                                         return true
                                     })
                                     replaceImpl = { [weak controller] c in
-                                        controller?.replace(with: c)
+                                        controller?.present(c, in: .window(.root))
                                     }
                                     strongSelf.push(controller)
                                 } else {
@@ -1699,12 +1711,15 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
                                                 } else if data.includePeers.peers.count >= limit && !isPremium {
                                                     var replaceImpl: ((ViewController) -> Void)?
                                                     let controller = PremiumLimitScreen(context: strongSelf.context, subject: .chatsPerFolder, count: Int32(data.includePeers.peers.count), action: {
-                                                        let controller = PremiumIntroScreen(context: strongSelf.context, source: .chatsPerFolder)
-                                                        replaceImpl?(controller)
+                                                        let premiumAlert = premiumAlertController(
+                                                            context: strongSelf.context,
+                                                            source: .folders
+                                                        )
+                                                        replaceImpl?(premiumAlert)
                                                         return true
                                                     })
                                                     replaceImpl = { [weak controller] c in
-                                                        controller?.replace(with: c)
+                                                        controller?.present(c, in: .window(.root))
                                                     }
                                                     strongSelf.push(controller)
                                                     f(.dismissWithoutContent)
@@ -2239,12 +2254,15 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
             let context = strongSelf.context
             var replaceImpl: ((ViewController) -> Void)?
             let controller = PremiumLimitScreen(context: context, subject: .folders, count: strongSelf.tabContainerNode.filtersCount, action: {
-                let controller = PremiumIntroScreen(context: context, source: .folders)
-                replaceImpl?(controller)
+                let premiumAlert = premiumAlertController(
+                    context: strongSelf.context,
+                    source: .folders
+                )
+                replaceImpl?(premiumAlert)
                 return true
             })
             replaceImpl = { [weak controller] c in
-                controller?.replace(with: c)
+                controller?.present(c, in: .window(.root))
             }
             strongSelf.push(controller)
         }
@@ -2713,12 +2731,15 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
             let context = self.context
             var replaceImpl: ((ViewController) -> Void)?
             let controller = PremiumLimitScreen(context: context, subject: .expiringStories, count: Int32(storiesCount), action: {
-                let controller = PremiumIntroScreen(context: context, source: .stories)
-                replaceImpl?(controller)
+                let premiumAlert = premiumAlertController(
+                    context: context,
+                    source: .stories
+                )
+                replaceImpl?(premiumAlert)
                 return true
             })
             replaceImpl = { [weak controller] c in
-                controller?.replace(with: c)
+                controller?.present(c, in: .window(.root))
             }
             if let navigationController = context.sharedContext.mainWindow?.viewController as? NavigationController {
                 navigationController.pushViewController(controller)
@@ -3913,7 +3934,7 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
                 }, presentController: { [weak self] c in
                     self?.present(c, in: .window(.root))
                 }, pushPremiumController: { [weak self] c in
-                    self?.push(c)
+                    self?.present(c, animated: true)
                 }, completed: {
                 }, linkUpdated: { _ in
                 })
@@ -5923,12 +5944,15 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
                             let context = strongSelf.context
                             var replaceImpl: ((ViewController) -> Void)?
                             let controller = PremiumLimitScreen(context: context, subject: .folders, count: strongSelf.tabContainerNode.filtersCount, action: {
-                                let controller = PremiumIntroScreen(context: context, source: .folders)
-                                replaceImpl?(controller)
+                                let premiumAlert = premiumAlertController(
+                                    context: strongSelf.context,
+                                    source: .folders
+                                )
+                                replaceImpl?(premiumAlert)
                                 return true
                             })
                             replaceImpl = { [weak controller] c in
-                                controller?.replace(with: c)
+                                controller?.present(c, in: .window(.root))
                             }
                             if let navigationController = strongSelf.context.sharedContext.mainWindow?.viewController as? NavigationController {
                                 navigationController.pushViewController(controller)
@@ -6098,12 +6122,15 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
             } else if filters.count >= limit && !isPremium {
                 var replaceImpl: ((ViewController) -> Void)?
                 let controller = PremiumLimitScreen(context: self.context, subject: .folders, count: Int32(filters.count), action: {
-                    let controller = PremiumIntroScreen(context: self.context, source: .folders)
-                    replaceImpl?(controller)
+                    let premiumAlert = premiumAlertController(
+                        context: self.context,
+                        source: .folders
+                    )
+                    replaceImpl?(premiumAlert)
                     return true
                 })
                 replaceImpl = { [weak controller] c in
-                    controller?.replace(with: c)
+                    controller?.present(c, in: .window(.root))
                 }
                 pushControllerImpl?(controller)
                 return

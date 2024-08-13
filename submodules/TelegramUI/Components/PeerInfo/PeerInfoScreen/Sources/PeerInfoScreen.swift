@@ -4324,11 +4324,11 @@ final class PeerInfoScreenNode: ViewControllerTracingNode, PeerInfoScreenNodePro
                     guard let strongSelf = self else {
                         return
                     }
-                    let controller = PremiumIntroScreen(context: strongSelf.context, source: source)
-                    controller.sourceView = sourceView
-                    controller.containerView = strongSelf.controller?.navigationController?.view
-                    controller.animationColor = white ? .white : strongSelf.presentationData.theme.list.itemAccentColor
-                    strongSelf.controller?.push(controller)
+                    let premiumAlert = premiumAlertController(
+                        context: strongSelf.context,
+                        source: source
+                    )
+                    strongSelf.controller?.present(premiumAlert, in: .window(.root))
                 })
             }
             
@@ -9916,7 +9916,7 @@ final class PeerInfoScreenNode: ViewControllerTracingNode, PeerInfoScreenNodePro
             push(LocalizationListController(context: self.context))
         case .premium:
             let controller = self.context.sharedContext.makePremiumIntroController(context: self.context, source: .settings, forceDark: false, dismissed: nil)
-            self.controller?.push(controller)
+            self.controller?.present(controller, in: .window(.update))
         case .premiumGift:
             let _ = (self.context.account.stateManager.contactBirthdays
             |> take(1)
@@ -9994,12 +9994,16 @@ final class PeerInfoScreenNode: ViewControllerTracingNode, PeerInfoScreenNodePro
                 if count >= maximumAvailableAccounts {
                     var replaceImpl: ((ViewController) -> Void)?
                     let controller = PremiumLimitScreen(context: strongSelf.context, subject: .accounts, count: Int32(count), action: {
-                        let controller = PremiumIntroScreen(context: strongSelf.context, source: .accounts)
-                        replaceImpl?(controller)
+                        let premiumAlert = premiumAlertController(
+                            context: strongSelf.context,
+                            source: .accounts
+                        )
+                        replaceImpl?(premiumAlert)
+                        
                         return true
                     })
                     replaceImpl = { [weak controller] c in
-                        controller?.replace(with: c)
+                        controller?.present(c, in: .window(.root))
                     }
                     if let navigationController = strongSelf.context.sharedContext.mainWindow?.viewController as? NavigationController {
                         navigationController.pushViewController(controller)

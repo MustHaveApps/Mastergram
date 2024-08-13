@@ -600,10 +600,14 @@ private final class StickerPackContainer: ASDisplayNode {
                                 guard let strongSelf = self else {
                                     return
                                 }
-                                let controller = PremiumIntroScreen(context: strongSelf.context, source: .stickers)
+                                
+                                let premiumAlert = premiumAlertController(
+                                    context: strongSelf.context,
+                                    source: .stickers
+                                )
                                 let navigationController = strongSelf.controller?.parentNavigationController
                                 strongSelf.controller?.dismiss(animated: false, completion: nil)
-                                navigationController?.pushViewController(controller)
+                                navigationController?.present(premiumAlert, animated: true)
                             }))
                         } else {
                             return nil
@@ -930,11 +934,14 @@ private final class StickerPackContainer: ASDisplayNode {
                 } else {
                     var replaceImpl: ((ViewController) -> Void)?
                     let controller = PremiumDemoScreen(context: context, subject: .animatedEmoji, action: {
-                        let controller = PremiumIntroScreen(context: context, source: .animatedEmoji)
-                        replaceImpl?(controller)
+                        let premiumAlert = premiumAlertController(
+                            context: context,
+                            source: .animatedEmoji
+                        )
+                        replaceImpl?(premiumAlert)
                     })
                     replaceImpl = { [weak controller] c in
-                        controller?.replace(with: c)
+                        controller?.present(c, in: .window(.root))
                     }
                     strongSelf.controller?.push(controller)
                 }
@@ -955,10 +962,13 @@ private final class StickerPackContainer: ASDisplayNode {
                 guard let strongSelf = self else {
                     return
                 }
-                let controller = PremiumIntroScreen(context: strongSelf.context, source: .stickers)
+                let premiumAlert = premiumAlertController(
+                    context: context,
+                    source: .stickers
+                )
                 let navigationController = strongSelf.controller?.parentNavigationController
                 strongSelf.controller?.dismiss(animated: false, completion: nil)
-                navigationController?.pushViewController(controller)
+                navigationController?.present(premiumAlert, animated: true)
             })
             
             return (strongSelf.view, itemLayer.convert(itemLayer.bounds, to: strongSelf.view.layer), content)

@@ -1926,7 +1926,7 @@ public final class SharedAccountContextImpl: SharedAccountContext {
     }
     
     public func makeBusinessSetupScreen(context: AccountContext) -> ViewController {
-        return PremiumIntroScreen(context: context, mode: .business, source: .settings, modal: false, forceDark: false)
+        return premiumAlertController(context: context, source: .settings)
     }
     
     public func makeChatbotSetupScreen(context: AccountContext, initialData: ChatbotSetupScreenInitialData) -> ViewController {
@@ -1994,12 +1994,10 @@ public final class SharedAccountContextImpl: SharedAccountContext {
     }
     
     public func makePremiumIntroController(context: AccountContext, source: PremiumIntroSource, forceDark: Bool, dismissed: (() -> Void)?) -> ViewController {
-        var modal = true
         let mappedSource: PremiumSource
         switch source {
         case .settings:
             mappedSource = .settings
-            modal = false
         case .stickers:
             mappedSource = .stickers
         case .reactions:
@@ -2079,9 +2077,12 @@ public final class SharedAccountContextImpl: SharedAccountContext {
         case .animatedEmoji:
             mappedSource = .animatedEmoji
         }
-        let controller = PremiumIntroScreen(context: context, source: mappedSource, modal: modal, forceDark: forceDark)
-        controller.wasDismissed = dismissed
-        return controller
+        let premiumAlert = premiumAlertController(
+            context: context,
+            source: mappedSource,
+            wasDismissed: { dismissed?() }
+        )
+        return premiumAlert
     }
     
     public func makePremiumDemoController(context: AccountContext, subject: PremiumDemoSubject, forceDark: Bool, action: @escaping () -> Void, dismissed: (() -> Void)?) -> ViewController {

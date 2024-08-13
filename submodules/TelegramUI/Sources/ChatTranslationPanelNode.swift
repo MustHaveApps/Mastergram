@@ -193,11 +193,14 @@ final class ChatTranslationPanelNode: ASDisplayNode {
             let context = self.context
             var replaceImpl: ((ViewController) -> Void)?
             let controller = PremiumDemoScreen(context: context, subject: .translation, action: {
-                let controller = PremiumIntroScreen(context: context, source: .translation)
-                replaceImpl?(controller)
+                let premiumAlert = premiumAlertController(
+                    context: context,
+                    source: .translation
+                )
+                replaceImpl?(premiumAlert)
             })
             replaceImpl = { [weak controller] c in
-                controller?.replace(with: c)
+                controller?.present(c, in: .window(.root))
             }
             self.interfaceInteraction?.chatController()?.push(controller)
         }

@@ -598,8 +598,11 @@ func moveReplyMessageToAnotherChat(selfController: ChatControllerImpl, replySubj
                         return false
                     }
                     if case .undo = action {
-                        let premiumController = PremiumIntroScreen(context: selfController.context, source: .settings)
-                        controller.push(premiumController)
+                        let premiumAlert = premiumAlertController(
+                            context: selfController.context,
+                            source: .settings
+                        )
+                        controller.present(premiumAlert, in: .window(.root))
                     }
                     return false
                 }), in: .current)

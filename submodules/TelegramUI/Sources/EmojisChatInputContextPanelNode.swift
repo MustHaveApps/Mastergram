@@ -399,11 +399,14 @@ final class EmojisChatInputContextPanelNode: ChatInputContextPanelNode {
                     } else {
                         var replaceImpl: ((ViewController) -> Void)?
                         let controller = PremiumDemoScreen(context: context, subject: .animatedEmoji, action: {
-                            let controller = PremiumIntroScreen(context: context, source: .animatedEmoji)
-                            replaceImpl?(controller)
+                            let premiumAlert = premiumAlertController(
+                                context: strongSelf.context,
+                                source: .animatedEmoji
+                            )
+                            replaceImpl?(premiumAlert)
                         })
                         replaceImpl = { [weak controller] c in
-                            controller?.replace(with: c)
+                            controller?.present(c, in: .window(.root))
                         }
                         strongSelf.interfaceInteraction?.getNavigationController()?.pushViewController(controller)
                     }
@@ -432,10 +435,11 @@ final class EmojisChatInputContextPanelNode: ChatInputContextPanelNode {
                 let _ = self
                 let _ = interfaceInteraction
                 
-                let controller = PremiumIntroScreen(context: context, source: .stickers)
-                //let _ = controller
-                
-                interfaceInteraction.getNavigationController()?.pushViewController(controller)
+                let premiumAlert = premiumAlertController(
+                    context: self.context,
+                    source: .stickers
+                )
+                interfaceInteraction.getNavigationController()?.present(premiumAlert, animated: true)
             })
             let _ = content
             //return nil

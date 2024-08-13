@@ -206,8 +206,11 @@ final class HorizontalStickersChatContextPanelNode: ChatInputContextPanelNode {
                                                     strongSelf.interfaceInteraction?.presentGlobalOverlayController(UndoOverlayController(presentationData: presentationData, content: .sticker(context: strongSelf.context, file: item.file, loop: true, title: strongSelf.strings.Premium_MaxFavedStickersTitle("\(limit)").string, text: text, undoText: nil, customAction: nil), elevatedLayout: false, action: { [weak self] action in
                                                         if let strongSelf = self {
                                                             if case .info = action {
-                                                                let controller = PremiumIntroScreen(context: strongSelf.context, source: .savedStickers)
-                                                                strongSelf.controllerInteraction?.navigationController()?.pushViewController(controller)
+                                                                let premiumAlert = premiumAlertController(
+                                                                    context: strongSelf.context,
+                                                                    source: .savedStickers
+                                                                )
+                                                                strongSelf.controllerInteraction?.navigationController()?.present(premiumAlert, animated: true)
                                                                 return true
                                                             }
                                                         }
@@ -248,8 +251,12 @@ final class HorizontalStickersChatContextPanelNode: ChatInputContextPanelNode {
                                 guard let strongSelf = self else {
                                     return
                                 }
-                                let controller = PremiumIntroScreen(context: strongSelf.context, source: .stickers)
-                                strongSelf.controllerInteraction?.navigationController()?.pushViewController(controller)
+                                
+                                let premiumAlert = premiumAlertController(
+                                    context: strongSelf.context,
+                                    source: .stickers
+                                )
+                                strongSelf.controllerInteraction?.navigationController()?.present(premiumAlert, animated: true)
                             }))
                         } else {
                             return nil

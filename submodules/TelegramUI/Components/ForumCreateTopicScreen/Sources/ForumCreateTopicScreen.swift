@@ -1077,11 +1077,14 @@ public class ForumCreateTopicScreen: ViewControllerComponentContainer {
             }
             var replaceImpl: ((ViewController) -> Void)?
             let controller = PremiumDemoScreen(context: context, subject: .animatedEmoji, action: {
-                let controller = PremiumIntroScreen(context: context, source: .animatedEmoji)
-                replaceImpl?(controller)
+                let premiumAlert = premiumAlertController(
+                    context: context,
+                    source: .animatedEmoji
+                )
+                replaceImpl?(premiumAlert)
             })
             replaceImpl = { [weak controller] c in
-                controller?.replace(with: c)
+                controller?.present(c, in: .window(.root))
             }
             strongSelf.push(controller)
         }

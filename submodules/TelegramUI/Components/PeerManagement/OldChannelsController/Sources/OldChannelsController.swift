@@ -251,7 +251,7 @@ public func oldChannelsController(context: AccountContext, updatedPresentationDa
     }
         
     var dismissImpl: (() -> Void)?
-    var pushImpl: ((ViewController) -> Void)?
+    var presentImpl: ((ViewController) -> Void)?
     var setDisplayNavigationBarImpl: ((Bool) -> Void)?
     
     var ensurePeerVisibleImpl: ((EnginePeer.Id) -> Void)?
@@ -366,8 +366,11 @@ public func oldChannelsController(context: AccountContext, updatedPresentationDa
                 if state.selectedPeers.count > 0 {
                     leaveActionImpl?()
                 } else {
-                    let controller = PremiumIntroScreen(context: context, source: .groupsAndChannels)
-                    pushImpl?(controller)
+                    let premiumAlert = premiumAlertController(
+                        context: context,
+                        source: .groupsAndChannels
+                    )
+                    presentImpl?(premiumAlert)
                 }
             })
         }
@@ -407,8 +410,8 @@ public func oldChannelsController(context: AccountContext, updatedPresentationDa
     dismissImpl = { [weak controller] in
         controller?.dismiss()
     }
-    pushImpl = { [weak controller] c in
-        controller?.push(c)
+    presentImpl = { [weak controller] c in
+        controller?.present(c, in: .window(.root))
     }
     setDisplayNavigationBarImpl = { [weak controller] display in
         controller?.setDisplayNavigationBar(display, transition: .animated(duration: 0.5, curve: .spring))

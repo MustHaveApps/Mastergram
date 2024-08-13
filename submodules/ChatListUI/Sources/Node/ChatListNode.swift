@@ -1501,13 +1501,16 @@ public final class ChatListNode: ListView {
                         case let .limitReached(count):
                             var replaceImpl: ((ViewController) -> Void)?
                             let controller = PremiumLimitScreen(context: context, subject: .pinnedSavedPeers, count: Int32(count), action: {
-                                let premiumScreen = PremiumIntroScreen(context: context, source: .pinnedChats)
-                                replaceImpl?(premiumScreen)
+                                let premiumAlert = premiumAlertController(
+                                    context: self.context,
+                                    source: .pinnedChats
+                                )
+                                replaceImpl?(premiumAlert)
                                 return true
                             })
                             self.push?(controller)
                             replaceImpl = { [weak controller] c in
-                                controller?.replace(with: c)
+                                controller?.present(c, in: .window(.root))
                             }
                         default:
                             break
@@ -1554,24 +1557,30 @@ public final class ChatListNode: ListView {
                                     if case .filter = location {
                                         var replaceImpl: ((ViewController) -> Void)?
                                         let controller = PremiumLimitScreen(context: context, subject: .chatsPerFolder, count: Int32(count), action: {
-                                            let premiumScreen = PremiumIntroScreen(context: context, source: .pinnedChats)
-                                            replaceImpl?(premiumScreen)
+                                            let premiumAlert = premiumAlertController(
+                                                context: strongSelf.context,
+                                                source: .pinnedChats
+                                            )
+                                            replaceImpl?(premiumAlert)
                                             return true
                                         })
                                         strongSelf.push?(controller)
                                         replaceImpl = { [weak controller] c in
-                                            controller?.replace(with: c)
+                                            controller?.present(c, in: .window(.root))
                                         }
                                     } else {
                                         var replaceImpl: ((ViewController) -> Void)?
                                         let controller = PremiumLimitScreen(context: context, subject: .pins, count: Int32(count), action: {
-                                            let premiumScreen = PremiumIntroScreen(context: context, source: .pinnedChats)
-                                            replaceImpl?(premiumScreen)
+                                            let premiumAlert = premiumAlertController(
+                                                context: strongSelf.context,
+                                                source: .pinnedChats
+                                            )
+                                            replaceImpl?(premiumAlert)
                                             return true
                                         })
                                         strongSelf.push?(controller)
                                         replaceImpl = { [weak controller] c in
-                                            controller?.replace(with: c)
+                                            controller?.present(c, in: .window(.root))
                                         }
                                     }
                                 }

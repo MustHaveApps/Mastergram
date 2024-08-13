@@ -981,11 +981,14 @@ public final class ChatListSearchContainerNode: SearchDisplayControllerContentNo
                             let context = strongSelf.context
                             var replaceImpl: ((ViewController) -> Void)?
                             let controller = PremiumDemoScreen(context: context, subject: .fasterDownload, action: {
-                                let controller = PremiumIntroScreen(context: context, source: .fasterDownload)
-                                replaceImpl?(controller)
+                                let premiumAlert = premiumAlertController(
+                                    context: strongSelf.context,
+                                    source: .fasterDownload
+                                )
+                                replaceImpl?(premiumAlert)
                             })
                             replaceImpl = { [weak controller] c in
-                                controller?.replace(with: c)
+                                controller?.present(c, in: .window(.root))
                             }
                             strongSelf.navigationController?.pushViewController(controller, animated: false, completion: {})
                                                                                     

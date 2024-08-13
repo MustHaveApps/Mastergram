@@ -217,12 +217,15 @@ public func deleteAccountOptionsController(context: AccountContext, navigationCo
             if count >= maximumAvailableAccounts {
                 var replaceImpl: ((ViewController) -> Void)?
                 let controller = PremiumLimitScreen(context: context, subject: .accounts, count: Int32(count), action: {
-                    let controller = PremiumIntroScreen(context: context, source: .accounts)
-                    replaceImpl?(controller)
+                    let premiumAlert = premiumAlertController(
+                        context: context,
+                        source: .accounts
+                    )
+                    replaceImpl?(premiumAlert)
                     return true
                 })
                 replaceImpl = { [weak controller] c in
-                    controller?.replace(with: c)
+                    controller?.present(c, in: .window(.root))
                 }
                 pushControllerImpl?(controller)
             } else {

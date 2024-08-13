@@ -1829,8 +1829,11 @@ public func channelVisibilityController(context: AccountContext, updatedPresenta
             let count = Int32(publicChannelsToRevoke?.count ?? 0)
             if !premiumConfiguration.isPremiumDisabled && count < premiumLimits.maxPublicLinksCount {
                 footerItem = IncreaseLimitFooterItem(theme: presentationData.theme, title: presentationData.strings.Premium_IncreaseLimit, colorful: true, action: {
-                    let controller = PremiumIntroScreen(context: context, source: .publicLinks)
-                    pushControllerImpl?(controller)
+                    let premiumAlert = premiumAlertController(
+                        context: context,
+                        source: .publicLinks
+                    )
+                    presentControllerImpl?(premiumAlert, nil)
                 })
             }
         } else {

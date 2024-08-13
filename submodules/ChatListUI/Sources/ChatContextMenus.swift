@@ -292,12 +292,15 @@ func chatContextMenuItems(context: AccountContext, peerId: PeerId, promoInfo: Ch
                                                 } else if count >= limit && !isPremium {
                                                     var replaceImpl: ((ViewController) -> Void)?
                                                     let controller = PremiumLimitScreen(context: context, subject: .chatsPerFolder, count: Int32(count), action: {
-                                                        let controller = PremiumIntroScreen(context: context, source: .chatsPerFolder)
-                                                        replaceImpl?(controller)
+                                                        let premiumAlert = premiumAlertController(
+                                                            context: context,
+                                                            source: .chatsPerFolder
+                                                        )
+                                                        replaceImpl?(premiumAlert)
                                                         return true
                                                     })
                                                     replaceImpl = { [weak controller] c in
-                                                        controller?.replace(with: c)
+                                                        controller?.present(c, in: .window(.root))
                                                     }
                                                     chatListController?.push(controller)
                                                     return
@@ -401,24 +404,30 @@ func chatContextMenuItems(context: AccountContext, peerId: PeerId, promoInfo: Ch
                                             if case .filter = location {
                                                 var replaceImpl: ((ViewController) -> Void)?
                                                 let controller = PremiumLimitScreen(context: context, subject: .chatsPerFolder, count: Int32(count), action: {
-                                                    let premiumScreen = PremiumIntroScreen(context: context, source: .pinnedChats)
-                                                    replaceImpl?(premiumScreen)
+                                                    let premiumAlert = premiumAlertController(
+                                                        context: context,
+                                                        source: .pinnedChats
+                                                    )
+                                                    replaceImpl?(premiumAlert)
                                                     return true
                                                 })
                                                 chatListController?.push(controller)
                                                 replaceImpl = { [weak controller] c in
-                                                    controller?.replace(with: c)
+                                                    controller?.present(c, animated: true)
                                                 }
                                             } else {
                                                 var replaceImpl: ((ViewController) -> Void)?
                                                 let controller = PremiumLimitScreen(context: context, subject: .pins, count: Int32(count), action: {
-                                                    let premiumScreen = PremiumIntroScreen(context: context, source: .pinnedChats)
-                                                    replaceImpl?(premiumScreen)
+                                                    let premiumAlert = premiumAlertController(
+                                                        context: context,
+                                                        source: .pinnedChats
+                                                    )
+                                                    replaceImpl?(premiumAlert)
                                                     return true
                                                 })
                                                 chatListController?.push(controller)
                                                 replaceImpl = { [weak controller] c in
-                                                    controller?.replace(with: c)
+                                                    controller?.present(c, in: .window(.root))
                                                 }
                                             }
                                         }
@@ -879,12 +888,15 @@ public func savedMessagesPeerMenuItems(context: AccountContext, threadId: Int64,
                 case let .limitReached(count):
                     var replaceImpl: ((ViewController) -> Void)?
                     let controller = PremiumLimitScreen(context: context, subject: .pinnedSavedPeers, count: Int32(count), action: {
-                        let controller = PremiumIntroScreen(context: context, source: .pinnedChats)
-                        replaceImpl?(controller)
+                        let premiumAlert = premiumAlertController(
+                            context: context,
+                            source: .pinnedChats
+                        )
+                        replaceImpl?(premiumAlert)
                         return true
                     })
                     replaceImpl = { [weak controller] c in
-                        controller?.replace(with: c)
+                        controller?.present(c, in: .window(.root))
                     }
                     parentController?.push(controller)
                 default:

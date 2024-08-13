@@ -3949,11 +3949,14 @@ class ChatControllerNode: ASDisplayNode, ASScrollViewDelegate {
                         
                         var replaceImpl: ((ViewController) -> Void)?
                         let controller = PremiumDemoScreen(context: strongSelf.context, subject: .animatedEmoji, action: {
-                            let controller = PremiumIntroScreen(context: strongSelf.context, source: .animatedEmoji)
-                            replaceImpl?(controller)
+                            let premiumAlert = premiumAlertController(
+                                context: strongSelf.context,
+                                source: .animatedEmoji
+                            )
+                            replaceImpl?(premiumAlert)
                         })
                         replaceImpl = { [weak controller] c in
-                            controller?.replace(with: c)
+                            controller?.present(c, in: .window(.root))
                         }
                         strongSelf.controller?.present(controller, in: .window(.root), with: nil)
                     }))

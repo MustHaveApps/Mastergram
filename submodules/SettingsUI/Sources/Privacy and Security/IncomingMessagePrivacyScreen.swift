@@ -155,15 +155,21 @@ public func incomingMessagePrivacyScreen(context: AccountContext, value: Bool, u
             presentInCurrentControllerImpl?(UndoOverlayController(presentationData: presentationData, content: .premiumPaywall(title: presentationData.strings.Privacy_Messages_PremiumToast_Title, text: presentationData.strings.Privacy_Messages_PremiumToast_Text, customUndoText: presentationData.strings.Privacy_Messages_PremiumToast_Action, timeout: nil, linkAction: { _ in
             }), elevatedLayout: false, action: { action in
                 if case .undo = action {
-                    let controller = PremiumIntroScreen(context: context, source: .settings)
-                    pushControllerImpl?(controller)
+                    let premiumAlert = premiumAlertController(
+                        context: context,
+                        source: .settings
+                    )
+                    presentControllerImpl?(premiumAlert, nil)
                 }
                 return false
             }))
         },
         infoLinkAction: {
-            let controller = PremiumIntroScreen(context: context, source: .settings)
-            pushControllerImpl?(controller)
+            let premiumAlert = premiumAlertController(
+                context: context,
+                source: .settings
+            )
+            presentControllerImpl?(premiumAlert, nil)
         }
     )
     

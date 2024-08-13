@@ -23,11 +23,14 @@ extension ChatControllerImpl {
         let context = self.context
         var replaceImpl: ((ViewController) -> Void)?
         let controller = PremiumDemoScreen(context: context, subject: .messageTags, action: {
-            let controller = PremiumIntroScreen(context: context, source: .messageTags)
-            replaceImpl?(controller)
+            let premiumAlert = premiumAlertController(
+                context: context,
+                source: .messageTags
+            )
+            replaceImpl?(premiumAlert)
         })
         replaceImpl = { [weak controller] c in
-            controller?.replace(with: c)
+            controller?.present(c, in: .window(.root))
         }
         self.push(controller)
     }

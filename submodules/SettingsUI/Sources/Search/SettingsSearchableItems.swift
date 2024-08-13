@@ -279,17 +279,24 @@ private func premiumSearchableItems(context: AccountContext) -> [SettingsSearcha
     var result: [SettingsSearchableItem] = []
         
     result.append(SettingsSearchableItem(id: .premium(0), title: strings.Settings_Premium, alternate: synonyms(strings.SettingsSearch_Synonyms_Premium), icon: icon, breadcrumbs: [], present: { context, _, present in
-        present(.push, PremiumIntroScreen(context: context, source: .settings, modal: false))
+        let premiumAlert = premiumAlertController(
+            context: context,
+            source: .settings
+        )
+        present(.modal, premiumAlert)
     }))
     
     let presentDemo: (PremiumDemoScreen.Subject, (SettingsSearchableItemPresentation, ViewController?) -> Void) -> Void = { subject, present in
         var replaceImpl: ((ViewController) -> Void)?
         let controller = PremiumDemoScreen(context: context, subject: subject, action: {
-            let controller = PremiumIntroScreen(context: context, source: .settings, modal: false)
-            replaceImpl?(controller)
+            let premiumAlert = premiumAlertController(
+                context: context,
+                source: .settings
+            )
+            replaceImpl?(premiumAlert)
         })
         replaceImpl = { [weak controller] c in
-            controller?.replace(with: c)
+            controller?.present(c, in: .window(.root))
         }
         present(.push, controller)
     }

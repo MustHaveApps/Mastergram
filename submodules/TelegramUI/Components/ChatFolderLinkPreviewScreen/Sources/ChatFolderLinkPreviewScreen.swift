@@ -1148,7 +1148,11 @@ private final class ChatFolderLinkPreviewScreenComponent: Component {
                                             guard let navigationController else {
                                                 return true
                                             }
-                                            navigationController.pushViewController(PremiumIntroScreen(context: component.context, source: .folders))
+                                            let premiumAlert = premiumAlertController(
+                                                context: component.context,
+                                                source: .folders
+                                            )
+                                            navigationController.present(premiumAlert, animated: true)
                                             return true
                                         })
                                         controller.push(limitController)
@@ -1158,7 +1162,11 @@ private final class ChatFolderLinkPreviewScreenComponent: Component {
                                             guard let navigationController else {
                                                 return true
                                             }
-                                            navigationController.pushViewController(PremiumIntroScreen(context: component.context, source: .membershipInSharedFolders))
+                                            let premiumAlert = premiumAlertController(
+                                                context: component.context,
+                                                source: .membershipInSharedFolders
+                                            )
+                                            navigationController.present(premiumAlert, animated: true)
                                             return true
                                         })
                                         controller.push(limitController)
@@ -1168,7 +1176,11 @@ private final class ChatFolderLinkPreviewScreenComponent: Component {
                                             guard let navigationController else {
                                                 return true
                                             }
-                                            navigationController.pushViewController(PremiumIntroScreen(context: component.context, source: .chatsPerFolder))
+                                            let premiumAlert = premiumAlertController(
+                                                context: component.context,
+                                                source: .chatsPerFolder
+                                            )
+                                            navigationController.present(premiumAlert, animated: true)
                                             return true
                                         })
                                         controller.push(limitController)
@@ -1178,7 +1190,11 @@ private final class ChatFolderLinkPreviewScreenComponent: Component {
                                             guard let navigationController else {
                                                 return true
                                             }
-                                            navigationController.pushViewController(PremiumIntroScreen(context: component.context, source: .groupsAndChannels))
+                                            let premiumAlert = premiumAlertController(
+                                                context: component.context,
+                                                source: .groupsAndChannels
+                                            )
+                                            navigationController.present(premiumAlert, animated: true)
                                             return true
                                         })
                                         controller.push(limitController)
@@ -1414,7 +1430,11 @@ private final class ChatFolderLinkPreviewScreenComponent: Component {
                                     guard let navigationController else {
                                         return true
                                     }
-                                    navigationController.pushViewController(PremiumIntroScreen(context: context, source: .membershipInSharedFolders))
+                                    let premiumAlert = premiumAlertController(
+                                        context: context,
+                                        source: .membershipInSharedFolders
+                                    )
+                                    navigationController.present(premiumAlert, animated: true)
                                     return true
                                 })
                                 
@@ -1426,7 +1446,12 @@ private final class ChatFolderLinkPreviewScreenComponent: Component {
                                     guard let navigationController else {
                                         return true
                                     }
-                                    navigationController.pushViewController(PremiumIntroScreen(context: component.context, source: .linksPerSharedFolder))
+                                    let premiumAlert = premiumAlertController(
+                                        context: component.context,
+                                        source: .linksPerSharedFolder
+                                    )
+                                    navigationController.present(premiumAlert, animated: true)
+
                                     return true
                                 })
                                 controller.push(limitController)
@@ -1437,7 +1462,11 @@ private final class ChatFolderLinkPreviewScreenComponent: Component {
                                     guard let navigationController else {
                                         return true
                                     }
-                                    navigationController.pushViewController(PremiumIntroScreen(context: component.context, source: .chatsPerFolder))
+                                    let premiumAlert = premiumAlertController(
+                                        context: component.context,
+                                        source: .chatsPerFolder
+                                    )
+                                    navigationController.present(premiumAlert, animated: true)
                                     return true
                                 })
                                 controller.push(limitController)
@@ -1449,7 +1478,11 @@ private final class ChatFolderLinkPreviewScreenComponent: Component {
                                     guard let navigationController else {
                                         return true
                                     }
-                                    navigationController.pushViewController(PremiumIntroScreen(context: component.context, source: .groupsAndChannels))
+                                    let premiumAlert = premiumAlertController(
+                                        context: component.context,
+                                        source: .groupsAndChannels
+                                    )
+                                    navigationController.present(premiumAlert, animated: true)
                                     return true
                                 })
                                 controller.push(limitController)

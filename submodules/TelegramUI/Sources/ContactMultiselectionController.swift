@@ -475,8 +475,11 @@ class ContactMultiselectionControllerImpl: ViewController, ContactMultiselection
                         return false
                     }
                     if case .undo = action {
-                        let premiumController = PremiumIntroScreen(context: self.context, source: .settings)
-                        self.push(premiumController)
+                        let premiumAlert = premiumAlertController(
+                            context: self.context,
+                            source: .settings
+                        )
+                        self.present(premiumAlert, in: .window(.root))
                     }
                     return false
                 }), in: .current)

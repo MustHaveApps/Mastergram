@@ -3653,11 +3653,16 @@ class ChatTextInputPanelNode: ChatInputPanelNode, ASEditableTextNodeDelegate, Ch
                     } else {
                         var replaceImpl: ((ViewController) -> Void)?
                         let controller = PremiumDemoScreen(context: context, subject: .animatedEmoji, action: {
-                            let controller = PremiumIntroScreen(context: context, source: .animatedEmoji)
-                            replaceImpl?(controller)
+                            if let context = strongSelf.context {
+                                let premiumAlert = premiumAlertController(
+                                    context: context,
+                                    source: .animatedEmoji
+                                )
+                                replaceImpl?(premiumAlert)
+                            }
                         })
                         replaceImpl = { [weak controller] c in
-                            controller?.replace(with: c)
+                            controller?.present(c, in: .window(.root))
                         }
                         strongSelf.interfaceInteraction?.getNavigationController()?.pushViewController(controller)
                     }
@@ -3686,10 +3691,14 @@ class ChatTextInputPanelNode: ChatInputPanelNode, ASEditableTextNodeDelegate, Ch
                 let _ = self
                 let _ = interfaceInteraction
                 
-                let controller = PremiumIntroScreen(context: context, source: .stickers)
-                //let _ = controller
-                
-                interfaceInteraction.getNavigationController()?.pushViewController(controller)
+                if let context = self.context {
+                    let premiumAlert = premiumAlertController(
+                        context: context,
+                        source: .stickers
+                    )
+                    
+                    interfaceInteraction.getNavigationController()?.present(premiumAlert, animated: true)
+                }
             })
             let _ = content
             //return nil

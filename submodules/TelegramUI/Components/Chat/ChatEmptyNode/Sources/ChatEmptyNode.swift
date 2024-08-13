@@ -1888,8 +1888,11 @@ public final class ChatEmptyNode: ASDisplayNode {
                         if isPremium {
                             dismissImpl?()
                         } else {
-                            let controller = PremiumIntroScreen(context: context, source: .settings, forceDark: false)
-                            replaceImpl?(controller)
+                            let premiumAlert = premiumAlertController(
+                                context: context,
+                                source: .settings
+                            )
+                            replaceImpl?(premiumAlert)
                         }
                     }
                     replaceImpl = { [weak self, weak controller] c in
@@ -1897,7 +1900,7 @@ public final class ChatEmptyNode: ASDisplayNode {
                             guard let self else {
                                 return
                             }
-                            self.interaction?.chatController()?.push(c)
+                            self.interaction?.chatController()?.present(c, in: .window(.root))
                         })
                     }
                     dismissImpl = { [weak controller] in

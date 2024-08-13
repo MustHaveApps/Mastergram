@@ -2131,11 +2131,15 @@ final class StoryItemSetContainerSendMessage {
                                         let context = component.context
                                         var replaceImpl: ((ViewController) -> Void)?
                                         let controller = PremiumLimitScreen(context: context, subject: .files, count: 2, action: {
-                                            replaceImpl?(PremiumIntroScreen(context: context, source: .upload))
+                                            let premiumAlert = premiumAlertController(
+                                                context: component.context,
+                                                source: .upload
+                                            )
+                                            replaceImpl?(premiumAlert)
                                             return true
                                         })
                                         replaceImpl = { [weak controller] c in
-                                            controller?.replace(with: c)
+                                            controller?.present(c, in: .window(.root))
                                         }
                                         component.controller()?.push(controller)
                                         return

@@ -1034,8 +1034,11 @@ func openResolvedUrlImpl(
                         } else {
                             fromPeerId = context.account.peerId
                         }
-                        let controller = PremiumIntroScreen(context: context, source: .gift(from: fromPeerId, to: toPeerId, duration: giftCode.months, giftCode: giftCode))
-                        navigationController?.pushViewController(controller)
+                        let premiumAlert = premiumAlertController(
+                            context: context,
+                            source: .gift(from: fromPeerId, to: toPeerId, duration: giftCode.months, giftCode: giftCode)
+                        )
+                        navigationController?.present(premiumAlert, animated: true)
                     } else {
                         var dismissImpl: (() -> Void)?
                         let controller = PremiumGiftCodeScreen(
@@ -1055,11 +1058,11 @@ func openResolvedUrlImpl(
                                 }, completed: {
                                     dismissImpl?()
                                     
-                                    let controller = PremiumIntroScreen(context: context, source: .settings, forceDark: forceDark, forceHasPremium: true)
-                                    navigationController?.pushViewController(controller)
-                                    Queue.mainQueue().after(0.3, {
-                                        controller.animateSuccess()
-                                    })
+                                    let premiumAlert = premiumAlertController(
+                                        context: context,
+                                        source: .settings
+                                    )
+                                    navigationController?.present(premiumAlert, animated: true)
                                 })
                             },
                             openPeer: { peer in

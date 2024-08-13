@@ -2541,8 +2541,11 @@ extension ChatControllerImpl {
             })
             
             if !self.presentationInterfaceState.isPremium {
-                let controller = PremiumIntroScreen(context: self.context, source: .settings)
-                self.push(controller)
+                let premiumAlert = premiumAlertController(
+                    context: self.context,
+                    source: .settings
+                )
+                self.present(premiumAlert, in: .window(.root))
                 return
             }
             
@@ -3488,8 +3491,11 @@ extension ChatControllerImpl {
                                     strongSelf.presentInGlobalOverlay(UndoOverlayController(presentationData: strongSelf.presentationData, content: .sticker(context: strongSelf.context, file: stickerFile, loop: true, title: strongSelf.presentationData.strings.Premium_MaxFavedStickersTitle("\(limit)").string, text: text, undoText: nil, customAction: nil), elevatedLayout: true, action: { [weak self] action in
                                         if let strongSelf = self {
                                             if case .info = action {
-                                                let controller = PremiumIntroScreen(context: strongSelf.context, source: .savedStickers)
-                                                strongSelf.push(controller)
+                                                let premiumAlert = premiumAlertController(
+                                                    context: strongSelf.context,
+                                                    source: .savedStickers
+                                                )
+                                                strongSelf.present(premiumAlert, in: .window(.root))
                                                 return true
                                             }
                                         }
@@ -3990,8 +3996,11 @@ extension ChatControllerImpl {
                         if case .undo = action {
                             strongSelf.chatDisplayNode.dismissTextInput()
                             
-                            let controller = PremiumIntroScreen(context: strongSelf.context, source: .settings)
-                            strongSelf.push(controller)
+                            let premiumAlert = premiumAlertController(
+                                context: strongSelf.context,
+                                source: .settings
+                            )
+                            strongSelf.present(premiumAlert, in: .window(.root))
                         }
                         return true
                     }), in: .current)
@@ -4249,8 +4258,12 @@ extension ChatControllerImpl {
             guard let self else {
                 return
             }
-            let controller = PremiumIntroScreen(context: self.context, source: .settings)
-            self.push(controller)
+            
+            let premiumAlert = premiumAlertController(
+                context: self.context,
+                source: .settings
+            )
+            self.present(premiumAlert, in: .window(.root))
         }, openBoostToUnrestrict: { [weak self] in
             guard let self, let peerId = self.chatLocation.peerId, let cachedData = self.peerView?.cachedData as? CachedChannelData, let boostToUnrestrict = cachedData.boostsToUnrestrict else {
                 return

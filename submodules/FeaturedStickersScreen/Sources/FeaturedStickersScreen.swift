@@ -533,8 +533,12 @@ private final class FeaturedStickersScreenNode: ViewControllerTracingNode {
                                                         strongSelf.controller?.presentInGlobalOverlay(UndoOverlayController(presentationData: strongSelf.presentationData, content: .sticker(context: strongSelf.context, file: file, loop: true, title: strongSelf.presentationData.strings.Premium_MaxFavedStickersTitle("\(limit)").string, text: text, undoText: nil, customAction: nil), elevatedLayout: false, action: { [weak self] action in
                                                             if let strongSelf = self {
                                                                 if case .info = action {
-                                                                    let controller = PremiumIntroScreen(context: strongSelf.context, source: .savedStickers)
-                                                                    strongSelf.controller?.push(controller)
+                                                                    let premiumAlert = premiumAlertController(
+                                                                        context: strongSelf.context,
+                                                                        source: .savedStickers
+                                                                    )
+                                                                    strongSelf.controller?.present(premiumAlert, in: .window(.root))
+                                                                    
                                                                     return true
                                                                 }
                                                             }
@@ -575,8 +579,11 @@ private final class FeaturedStickersScreenNode: ViewControllerTracingNode {
                                     guard let strongSelf = self else {
                                         return
                                     }
-                                    let controller = PremiumIntroScreen(context: strongSelf.context, source: .stickers)
-                                    strongSelf.controller?.push(controller)
+                                    let premiumAlert = premiumAlertController(
+                                        context: strongSelf.context,
+                                        source: .stickers
+                                    )
+                                    strongSelf.controller?.present(premiumAlert, in: .window(.root))
                                 }))
                             } else {
                                 return nil
@@ -621,8 +628,11 @@ private final class FeaturedStickersScreenNode: ViewControllerTracingNode {
                                                 strongSelf.controller?.presentInGlobalOverlay(UndoOverlayController(presentationData: strongSelf.presentationData, content: .sticker(context: strongSelf.context, file: item.file, loop: true, title: strongSelf.presentationData.strings.Premium_MaxFavedStickersTitle("\(limit)").string, text: text, undoText: nil, customAction: nil), elevatedLayout: false, action: { [weak self] action in
                                                     if let strongSelf = self {
                                                         if case .info = action {
-                                                            let controller = PremiumIntroScreen(context: strongSelf.context, source: .savedStickers)
-                                                            strongSelf.controller?.push(controller)
+                                                            let premiumAlert = premiumAlertController(
+                                                                context: strongSelf.context,
+                                                                source: .savedStickers
+                                                            )
+                                                            strongSelf.controller?.present(premiumAlert, in: .window(.root))
                                                             return true
                                                         }
                                                     }
@@ -663,8 +673,11 @@ private final class FeaturedStickersScreenNode: ViewControllerTracingNode {
                             guard let strongSelf = self else {
                                 return
                             }
-                            let controller = PremiumIntroScreen(context: strongSelf.context, source: .stickers)
-                            strongSelf.controller?.push(controller)
+                            let premiumAlert = premiumAlertController(
+                                context: strongSelf.context,
+                                source: .stickers
+                            )
+                            strongSelf.controller?.present(premiumAlert, in: .window(.root))
                         }))
                     } else {
                         return nil
