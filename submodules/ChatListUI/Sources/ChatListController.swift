@@ -1188,6 +1188,14 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
             }
             self.openBirthdaySetup()
         }
+        
+        self.chatListDisplayNode.mainContainerNode.openStarsTopup = { [weak self] amount in
+            guard let self else {
+                return
+            }
+            self.openStarsTopup(amount: amount)
+        }
+        
         self.chatListDisplayNode.mainContainerNode.openPremiumManagement = { [weak self] in
             guard let self else {
                 return
@@ -1218,7 +1226,7 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
                             if case let .channel(channel) = actualPeer, channel.flags.contains(.isForum), let threadId {
                                 let _ = strongSelf.context.sharedContext.navigateToForumThread(context: strongSelf.context, peerId: peer.id, threadId: threadId, messageId: messageId, navigationController: navigationController, activateInput: nil, scrollToEndIfExists: false, keepStack: .never).startStandalone()
                             } else {
-                                strongSelf.context.sharedContext.navigateToChatController(NavigateToChatControllerParams(navigationController: navigationController, context: strongSelf.context, chatLocation: .peer(actualPeer), subject: .message(id: .id(messageId), highlight: ChatControllerSubject.MessageHighlight(quote: nil), timecode: nil), purposefulAction: {
+                                strongSelf.context.sharedContext.navigateToChatController(NavigateToChatControllerParams(navigationController: navigationController, context: strongSelf.context, chatLocation: .peer(actualPeer), subject: .message(id: .id(messageId), highlight: ChatControllerSubject.MessageHighlight(quote: nil), timecode: nil, setupReply: false), purposefulAction: {
                                     if deactivateOnAction {
                                         self?.deactivateSearch(animated: false)
                                     }
@@ -1479,7 +1487,7 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
                 } else {
                     var subject: ChatControllerSubject?
                     if case let .search(messageId) = source, let id = messageId {
-                        subject = .message(id: .id(id), highlight: nil, timecode: nil)
+                        subject = .message(id: .id(id), highlight: nil, timecode: nil, setupReply: false)
                     }
                     let chatController = strongSelf.context.sharedContext.makeChatController(context: strongSelf.context, chatLocation: .peer(id: peer.id), subject: subject, botStart: nil, mode: .standard(.previewing), params: nil)
                     chatController.canReadHistory.set(false)
@@ -2843,15 +2851,17 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
                 return nil
             }
             if let componentView = self.chatListHeaderView() {
-                let peerId: EnginePeer.Id
+                let peerId: EnginePeer.Id?
                 switch target {
                 case .myStories:
                     peerId = self.context.account.peerId
                 case let .peer(id):
                     peerId = id
+                case .botPreview:
+                    peerId = nil
                 }
                 
-                if let (transitionView, _) = componentView.storyPeerListView()?.transitionViewForItem(peerId: peerId) {
+                if let peerId, let (transitionView, _) = componentView.storyPeerListView()?.transitionViewForItem(peerId: peerId) {
                     return StoryCameraTransitionOut(
                         destinationView: transitionView,
                         destinationRect: transitionView.bounds,
@@ -4026,6 +4036,7 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
             StoryContainerScreen.openPeerStoriesCustom(
                 context: self.context,
                 peerId: peerId,
+                focusOnId: storyId,
                 isHidden: false,
                 singlePeer: true,
                 parentController: self,
@@ -4800,8 +4811,7 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
                     let actionSheet = ActionSheetController(presentationData: self.presentationData)
                     var items: [ActionSheetItem] = []
                     if havePrivateChats {
-                        //TODO:localize
-                        items.append(ActionSheetButtonItem(title: haveNonPrivateChats ? "Delete from both sides where possible" : "Delete from both sides", color: .destructive, action: { [weak self, weak actionSheet] in
+                        items.append(ActionSheetButtonItem(title: haveNonPrivateChats ? self.presentationData.strings.ChatList_DeleteForAllWhenPossible : self.presentationData.strings.ChatList_DeleteForAll, color: .destructive, action: { [weak self, weak actionSheet] in
                             actionSheet?.dismissAnimated()
                             
                             guard let strongSelf = self else {
@@ -4873,8 +4883,7 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
                             strongSelf.donePressed()
                         }))
                     }
-                    //TODO:localize
-                    items.append(ActionSheetButtonItem(title: havePrivateChats ? "Delete for me" : self.presentationData.strings.ChatList_DeleteConfirmation(Int32(peerIds.count)), color: .destructive, action: { [weak self, weak actionSheet] in
+                    items.append(ActionSheetButtonItem(title: havePrivateChats ? self.presentationData.strings.ChatList_DeleteForMe : self.presentationData.strings.ChatList_DeleteConfirmation(Int32(peerIds.count)), color: .destructive, action: { [weak self, weak actionSheet] in
                         actionSheet?.dismissAnimated()
                         
                         guard let strongSelf = self else {
@@ -6015,6 +6024,14 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
         self.push(controller)
     }
     
+    func openStarsTopup(amount: Int64?) {
+        guard let starsContext = self.context.starsContext else {
+            return
+        }
+        let controller = self.context.sharedContext.makeStarsPurchaseScreen(context: self.context, starsContext: starsContext, options: [], purpose: amount.flatMap({ .topUp(requiredStars: $0, purpose: "subs") }) ?? .generic, completion: { _ in })
+        self.push(controller)
+    }
+    
     private var storyCameraTransitionInCoordinator: StoryCameraTransitionInCoordinator?
     var hasStoryCameraTransition: Bool {
         return self.storyCameraTransitionInCoordinator != nil
@@ -6033,15 +6050,17 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
                     return nil
                 }
                 if let componentView = self.chatListHeaderView() {
-                    let peerId: EnginePeer.Id
+                    let peerId: EnginePeer.Id?
                     switch target {
                     case .myStories:
                         peerId = self.context.account.peerId
                     case let .peer(id):
                         peerId = id
+                    case .botPreview:
+                        peerId = nil
                     }
                     
-                    if let (transitionView, _) = componentView.storyPeerListView()?.transitionViewForItem(peerId: peerId) {
+                    if let peerId, let (transitionView, _) = componentView.storyPeerListView()?.transitionViewForItem(peerId: peerId) {
                         return StoryCameraTransitionOut(
                             destinationView: transitionView,
                             destinationRect: transitionView.bounds,
