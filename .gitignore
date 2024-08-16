@@ -69,3 +69,6 @@ build-input/*
 
 .*~
 #*#
+
+bazel-litegram
+bazel-litegram/*
