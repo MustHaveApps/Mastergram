@@ -6185,15 +6185,17 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
                     guard let self else { return }
                     switch navigation {
                     case let .withBotApp(botAppStart):
-                        context.sharedContext.applicationBindings.dismissNativeController()
-                        
-                        self.presentBotApp(
-                            botApp: botAppStart.botApp,
-                            botPeer: peer,
-                            peerId: peer.id,
-                            payload: botAppStart.payload,
-                            compact: false
-                        )
+                        if let botApp = botAppStart.botApp {
+                            context.sharedContext.applicationBindings.dismissNativeController()
+                            
+                            self.presentBotApp(
+                                botApp: botApp,
+                                botPeer: peer,
+                                peerId: peer.id,
+                                payload: botAppStart.payload,
+                                compact: false
+                            )
+                        }
                     default:
                         break
                     }
@@ -6264,6 +6266,7 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
                         peerId: peerId,
                         botId: botPeer.id,
                         botName: botApp.title,
+                        botVerified: botPeer.isVerified,
                         url: result.url,
                         queryId: 0,
                         payload: payload,
@@ -6391,7 +6394,8 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
                             //                            if let self {
                             //                                self.openResolved(result: .peer(botPeer._asPeer(), .info(nil)), sourceMessageId: nil)
                             //                            }
-                        }
+                        }, 
+                        openTerms: {}
                     )
                     self.present(
                         controller,
@@ -6429,7 +6433,13 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
                         break
                     default:
                         progress?.set(.single(false))
-                        self.context.sharedContext.openChatInstantPage(context: self.context, message: message, sourcePeerType: nil, navigationController: navigationController)
+                        
+                        let controller = self.context.sharedContext.makeInstantPageController(
+                            context: self.context,
+                            message: message,
+                            sourcePeerType: nil
+                        )
+                        
                         return
                     }
                 }
@@ -6501,10 +6511,11 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
                                 |> deliverOnMainQueue
                             ).startStandalone(next: { [weak self] peer in
                                 if let self = self,
-                                   let peer
+                                   let peer,
+                                   let botApp = botAppStart.botApp
                                 {
                                     self.presentBotApp(
-                                        botApp: botAppStart.botApp,
+                                        botApp: botApp,
                                         botPeer: peer,
                                         peerId: peer.id,
                                         payload: botAppStart.payload,
