@@ -6434,11 +6434,9 @@ public class ChatListControllerImpl: TelegramBaseController, ChatListController 
                     default:
                         progress?.set(.single(false))
                         
-                        let controller = self.context.sharedContext.makeInstantPageController(
-                            context: self.context,
-                            message: message,
-                            sourcePeerType: nil
-                        )
+                        if let controller = self.context.sharedContext.makeInstantPageController(context: self.context, message: message, sourcePeerType: nil) {
+                            navigationController.pushViewController(controller)
+                        }
                         
                         return
                     }
