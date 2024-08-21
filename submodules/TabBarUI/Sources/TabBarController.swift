@@ -131,6 +131,7 @@ open class TabBarControllerImpl: ViewController, TabBarController {
     private var theme: TabBarControllerTheme
     
     public var cameraItemAndAction: (item: UITabBarItem, action: () -> Void)?
+    public var appsItemAndAction: (item: UITabBarItem, action: () -> Void)?
     
     public init(navigationBarPresentationData: NavigationBarPresentationData, theme: TabBarControllerTheme) {
         self.navigationBarPresentationData = navigationBarPresentationData
@@ -231,6 +232,17 @@ open class TabBarControllerImpl: ViewController, TabBarController {
                         }
                     }
                 }
+                if let (appsItem, appsAction) = strongSelf.appsItemAndAction {
+                    if let appsItemIndex = strongSelf.tabBarControllerNode.tabBarNode.tabBarItems.firstIndex(where: { $0.item === appsItem }) {
+                        if index == appsItemIndex {
+                            appsAction()
+                            return
+                        } else if index > appsItemIndex {
+                            index -= 1
+                        }
+                    }
+                }
+                
                 if longTap, let controller = strongSelf.controllers[index] as? TabBarContainedController {
                     controller.presentTabBarPreviewingController(sourceNodes: itemNodes)
                     return
@@ -309,6 +321,15 @@ open class TabBarControllerImpl: ViewController, TabBarController {
                         }
                     }
                 }
+                if let (appsItem, _) = strongSelf.appsItemAndAction {
+                    if let appsItemIndex = strongSelf.tabBarControllerNode.tabBarNode.tabBarItems.firstIndex(where: { $0.item === appsItem }) {
+                        if index == appsItemIndex {
+                            return
+                        } else if index > appsItemIndex {
+                            index -= 1
+                        }
+                    }
+                }
                 strongSelf.controllers[index].tabBarItemContextAction(sourceNode: node, gesture: gesture)
             }
         }, swipeAction: { [weak self] index, direction in
@@ -322,6 +343,15 @@ open class TabBarControllerImpl: ViewController, TabBarController {
                         if index == cameraItemIndex {
                             return
                         } else if index > cameraItemIndex {
+                            index -= 1
+                        }
+                    }
+                }
+                if let (appsItem, _) = strongSelf.appsItemAndAction {
+                    if let appsItemIndex = strongSelf.tabBarControllerNode.tabBarNode.tabBarItems.firstIndex(where: { $0.item === appsItem }) {
+                        if index == appsItemIndex {
+                            return
+                        } else if index > appsItemIndex {
                             index -= 1
                         }
                     }
@@ -353,6 +383,13 @@ open class TabBarControllerImpl: ViewController, TabBarController {
         if let (cameraItem, _) = self.cameraItemAndAction {
             if let cameraItemIndex = self.tabBarControllerNode.tabBarNode.tabBarItems.firstIndex(where: { $0.item === cameraItem }) {
                 if tabBarSelectedIndex >= cameraItemIndex {
+                    tabBarSelectedIndex += 1
+                }
+            }
+        }
+        if let (appsItem, _) = self.appsItemAndAction {
+            if let appsItemIndex = self.tabBarControllerNode.tabBarNode.tabBarItems.firstIndex(where: { $0.item === appsItem }) {
+                if tabBarSelectedIndex >= appsItemIndex {
                     tabBarSelectedIndex += 1
                 }
             }
@@ -470,6 +507,9 @@ open class TabBarControllerImpl: ViewController, TabBarController {
         var tabBarItems = self.controllers.map({ TabBarNodeItem(item: $0.tabBarItem, contextActionType: $0.tabBarItemContextActionType) })
         if let (cameraItem, _) = self.cameraItemAndAction {
             tabBarItems.insert(TabBarNodeItem(item: cameraItem, contextActionType: .none), at: Int(floor(CGFloat(controllers.count) / 2)))
+        }
+        if let (appsItem, _) = self.cameraItemAndAction {
+            tabBarItems.insert(TabBarNodeItem(item: appsItem, contextActionType: .none), at: Int(floor(CGFloat(controllers.count) / 2)))
         }
         
         self.tabBarControllerNode.tabBarNode.tabBarItems = tabBarItems

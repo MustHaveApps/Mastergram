@@ -12818,8 +12818,8 @@ Sorry for the inconvenience.";
 
 // MARK: - Lite gram changes
 
-"ChatList.Apps" = "Apps";
-"ChatList.Wallet" = "Wallet";
+"TabBar.Apps" = "Apps";
+"TabBar.Wallet" = "Wallet";
 
 "Premium.Unavailable.title" = "Can't make purchases";
 "Premium.Unavailable.message" = "To buy Telegram subscription you need to open Telegram application and make purchase there";

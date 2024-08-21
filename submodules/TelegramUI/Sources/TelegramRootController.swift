@@ -31,6 +31,13 @@ import PeerInfoScreen
 import PeerInfoStoryGridScreen
 import ShareWithPeersScreen
 import ChatEmptyNode
+import WebUI
+import AttachmentUI
+import WebsiteType
+import UndoUI
+import AlertUI
+import TelegramNotices
+import PresentationDataUtils
 
 private class DetailsChatPlaceholderNode: ASDisplayNode, NavigationDetailsPlaceholderNode {
     private var presentationData: PresentationData
@@ -84,10 +91,18 @@ public final class TelegramRootController: NavigationController, TelegramRootCon
     private var presentationDataDisposable: Disposable?
     private var presentationData: PresentationData
     
+    var updatedPresentationData: (PresentationData, Signal<PresentationData, NoError>) {
+        return (self.presentationData, self.context.sharedContext.presentationData)
+    }
+    
     private var detailsPlaceholderNode: DetailsChatPlaceholderNode?
     
     private var applicationInFocusDisposable: Disposable?
     private var storyUploadEventsDisposable: Disposable?
+    private let openWebAppDispossable = MetaDisposable()
+    
+    private let openMessageFromSearchDisposable: MetaDisposable = MetaDisposable()
+    private let navigationActionDisposable = MetaDisposable()
     
     override public var minimizedContainer: MinimizedContainer? {
         didSet {
@@ -203,9 +218,9 @@ public final class TelegramRootController: NavigationController, TelegramRootCon
         }
         controllers.append(contactsController)
         
-        if showCallsTab {
-            controllers.append(callListController)
-        }
+//        if showCallsTab {
+//            controllers.append(callListController)
+//        }
         controllers.append(chatListController)
         
         var restoreSettignsController: (ViewController & SettingsController)?
@@ -226,6 +241,19 @@ public final class TelegramRootController: NavigationController, TelegramRootCon
         }
         accountSettingsController.parentController = self
         controllers.append(accountSettingsController)
+        
+        tabBarController.appsItemAndAction = (
+            UITabBarItem(title: presentationData.strings.TabBar_Apps, image: UIImage(named: "apps_icon", in: getAppBundle(), compatibleWith: nil)?.precomposed(), tag: 1),
+            { [weak self] in
+                self?.openApplication(url: "https://t.me/tapps_bot/center")
+            }
+        )
+        tabBarController.appsItemAndAction = (
+            UITabBarItem(title: presentationData.strings.TabBar_Wallet, image: UIImage(named: "purse_icon", in: getAppBundle(), compatibleWith: nil)?.precomposed(), tag: 1),
+            { [weak self] in
+                self?.openApplication(url: "https://t.me/wallet/start")
+            }
+        )
         
         tabBarController.setControllers(controllers, selectedIndex: restoreSettignsController != nil ? (controllers.count - 1) : (controllers.count - 2))
         
@@ -729,6 +757,418 @@ public final class TelegramRootController: NavigationController, TelegramRootCon
     
     public func openBirthdaySetup() {
         self.accountSettingsController?.openBirthdaySetup()
+    }
+    
+    private func openBotAppFromURL(
+        context: AccountContext,
+        url: String,
+        navigationController: NavigationController?,
+        dismissInput: @escaping () -> Void
+    ) {
+        guard let navigationController = navigationController else { return }
+        
+        let _ = (
+            context.sharedContext.resolveUrl(
+                context: context,
+                peerId: nil,
+                url: url,
+                skipUrlAuth: true
+            )
+            |> deliverOnMainQueue
+        ).startStandalone(next: { resolved in
+            context.sharedContext.openResolvedUrl(
+                resolved,
+                context: context,
+                urlContext: .generic,
+                navigationController: navigationController,
+                forceExternal: false,
+                openPeer: { [weak self] peer, navigation in
+                    guard let self else { return }
+                    switch navigation {
+                    case let .withBotApp(botAppStart):
+                        if let botApp = botAppStart.botApp {
+                            context.sharedContext.applicationBindings.dismissNativeController()
+                            
+                            self.presentBotApp(
+                                botApp: botApp,
+                                botPeer: peer,
+                                peerId: peer.id,
+                                payload: botAppStart.payload,
+                                compact: false
+                            )
+                        }
+                    default:
+                        break
+                    }
+                },
+                sendFile: nil,
+                sendSticker: nil,
+                sendEmoji: nil,
+                requestMessageActionUrlAuth: nil,
+                joinVoiceChat: { peerId, invite, call in
+                    
+                }, present: { c, a in
+                    context.sharedContext.applicationBindings.dismissNativeController()
+                    
+                    c.presentationArguments = a
+                    
+                    context.sharedContext.applicationBindings.getWindowHost()?.present(c, on: .root, blockInteraction: false, completion: {})
+                }, dismissInput: {
+                    dismissInput()
+                }, contentContext: nil, progress: nil, completion: nil)
+        })
+    }
+    
+    private func presentBotApp(
+        botApp: BotApp,
+        botPeer: EnginePeer,
+        peerId: PeerId,
+        payload: String?,
+        compact: Bool,
+        concealed: Bool = false,
+        commit: @escaping () -> Void = {}
+    ) {
+        if let navigationController = navigationController as? NavigationController,
+           let minimizedContainer = navigationController.minimizedContainer
+        {
+            for controller in minimizedContainer.controllers {
+                if let controller = controller as? AttachmentController,
+                    let mainController = controller.mainController as? WebAppController,
+                   mainController.botId == peerId
+                {
+                    navigationController.maximizeViewController(controller, animated: true)
+                    commit()
+                    return
+                }
+            }
+        }
+        
+        let openBotApp: (Bool, Bool) -> Void = { [weak self] allowWrite, justInstalled in
+            guard let self else { return }
+            commit()
+            
+            //            let botAddress = botPeer.addressName ?? ""
+            self.openWebAppDispossable.set(
+                (self.context.engine.messages.requestAppWebView(
+                    peerId: peerId,
+                    appReference: .id(id: botApp.id, accessHash: botApp.accessHash),
+                    payload: payload,
+                    themeParams: generateWebAppThemeParams(self.presentationData.theme),
+                    compact: compact,
+                    allowWrite: allowWrite
+                )
+                 |> deliverOnMainQueue)
+                .startStrict(next: { [weak self] result in
+                    guard let self else { return }
+                    
+                    let params = WebAppParameters(
+                        source: .generic,
+                        peerId: peerId,
+                        botId: botPeer.id,
+                        botName: botApp.title,
+                        botVerified: botPeer.isVerified,
+                        url: result.url,
+                        queryId: 0,
+                        payload: payload,
+                        buttonText: "",
+                        keepAliveSignal: nil,
+                        forceHasSettings: botApp.flags.contains(.hasSettings),
+                        fullSize: result.flags.contains(.fullSize)
+                    )
+                    
+                    let controller = standaloneWebAppController(
+                        context: self.context,
+                        updatedPresentationData: self.updatedPresentationData,
+                        params: params,
+                        threadId: nil,
+                        openUrl: { [weak self] url, concealed, commit in
+                            self?.openUrl(
+                                url,
+                                concealed: concealed,
+                                forceExternal: true,
+                                commit: commit
+                            )
+                        },
+                        requestSwitchInline: { query, chatTypes, completion in
+                        }, completion: {},
+                        getNavigationController: { [weak self] in
+                            self?.navigationController as? NavigationController
+                        }
+                    )
+                    
+                    controller.navigationPresentation = .flatModal
+                    
+                    (self.tabBarController?.selectedViewController as? ViewController)?.push(controller)
+                }, error: { [weak self] error in
+                    guard let self else { return }
+                    
+                    self.currentWindow?.present(
+                        textAlertController(
+                            context: self.context,
+                            updatedPresentationData: self.updatedPresentationData,
+                            title: nil,
+                            text: self.presentationData.strings.Login_UnknownError,
+                            actions: [
+                                TextAlertAction(
+                                    type: .defaultAction,
+                                    title: self.presentationData.strings.Common_OK,
+                                    action: {}
+                                )
+                            ]
+                        ),
+                        on: .root,
+                        blockInteraction: false,
+                        completion: {}
+                    )
+                })
+            )
+        }
+        
+        let _ = combineLatest(
+            queue: Queue.mainQueue(),
+            ApplicationSpecificNotice.getBotGameNotice(
+                accountManager: self.context.sharedContext.accountManager,
+                peerId: botPeer.id
+            ),
+            self.context.engine.messages.attachMenuBots(),
+            self.context.engine.messages.getAttachMenuBot(botId: botPeer.id, cached: true)
+            |> map(Optional.init)
+            |> `catch` { _ -> Signal<AttachMenuBot?, NoError> in return .single(nil) }
+        ).startStandalone(next: { [weak self] noticed, attachMenuBots, attachMenuBot in
+            guard let self else { return }
+            
+            var isAttachMenuBotInstalled: Bool?
+            if let _ = attachMenuBot {
+                if let _ = attachMenuBots.first(where: { $0.peer.id == botPeer.id && !$0.flags.contains(.notActivated) }) {
+                    isAttachMenuBotInstalled = true
+                } else {
+                    isAttachMenuBotInstalled = false
+                }
+            }
+            
+            let context = self.context
+            if !noticed || botApp.flags.contains(.notActivated) || isAttachMenuBotInstalled == false {
+                if let isAttachMenuBotInstalled,
+                   let attachMenuBot {
+                    if !isAttachMenuBotInstalled {
+                        let controller = webAppTermsAlertController(
+                            context: context,
+                            updatedPresentationData: self.updatedPresentationData,
+                            bot: attachMenuBot,
+                            completion: {
+                                allowWrite in
+                                let _ = ApplicationSpecificNotice.setBotGameNotice(
+                                    accountManager: context.sharedContext.accountManager,
+                                    peerId: botPeer.id
+                                ).startStandalone()
+                                let _ = (
+                                    context.engine.messages.addBotToAttachMenu(
+                                        botId: botPeer.id,
+                                        allowWrite: allowWrite
+                                    )
+                                    |> deliverOnMainQueue
+                                ).startStandalone(error: { _ in
+                                }, completed: {
+                                    openBotApp(allowWrite, true)
+                                })
+                            }
+                        )
+                        (self.tabBarController?.selectedViewController as? ViewController)?
+                            .present(controller, in: .window(.root))
+                    } else {
+                        openBotApp(false, false)
+                    }
+                } else {
+                    let controller = webAppLaunchConfirmationController(
+                        context: context,
+                        updatedPresentationData: self.updatedPresentationData,
+                        peer: botPeer,
+                        requestWriteAccess: botApp.flags.contains(.notActivated) && botApp.flags.contains(.requiresWriteAccess),
+                        completion: { allowWrite in
+                            let _ = ApplicationSpecificNotice.setBotGameNotice(
+                                accountManager: context.sharedContext.accountManager,
+                                peerId: botPeer.id
+                            ).startStandalone()
+                            
+                            openBotApp(allowWrite, false)
+                        }, showMore: { //[weak self] in
+                            //                            if let self {
+                            //                                self.openResolved(result: .peer(botPeer._asPeer(), .info(nil)), sourceMessageId: nil)
+                            //                            }
+                        },
+                        openTerms: {}
+                    )
+                    (self.tabBarController?.selectedViewController as? ViewController)?
+                        .present(controller, in: .window(.root))
+                }
+            } else {
+                openBotApp(false, false)
+            }
+        })
+        
+    }
+    
+    private func openUrl(
+        _ url: String,
+        concealed: Bool,
+        forceExternal: Bool = false,
+        skipUrlAuth: Bool = false,
+        skipConcealedAlert: Bool = false,
+        message: Message? = nil,
+        allowInlineWebpageResolution: Bool = false,
+        progress: Promise<Bool>? = nil,
+        commit: @escaping () -> Void = {}
+    ) {
+        if allowInlineWebpageResolution,
+            let message,
+           let webpage = message.media.first(where: { $0 is TelegramMediaWebpage }) as? TelegramMediaWebpage,
+           case let .Loaded(content) = webpage.content,
+           content.url == url
+        {
+            if content.instantPage != nil {
+                if let navigationController = self.navigationController as? NavigationController {
+                    switch instantPageType(of: content) {
+                    case .album:
+                        break
+                    default:
+                        progress?.set(.single(false))
+                        
+                        if let controller = self.context.sharedContext.makeInstantPageController(context: self.context, message: message, sourcePeerType: nil) {
+                            navigationController.pushViewController(controller)
+                        }
+                        
+                        return
+                    }
+                }
+            }
+        }
+        
+        let disposable = openUserGeneratedUrl(
+            context: self.context,
+            peerId: nil,
+            url: url,
+            concealed: concealed,
+            skipUrlAuth: skipUrlAuth,
+            skipConcealedAlert: skipConcealedAlert,
+            present: { [weak self] c in
+                self?.currentWindow?.present(
+                    c,
+                    on: .root,
+                    blockInteraction: false,
+                    completion: {}
+                )
+            }, openResolved: { [weak self] resolved in
+                guard let self else { return }
+                
+                self.context.sharedContext.openResolvedUrl(
+                    resolved,
+                    context: self.context,
+                    urlContext: .generic,
+                    navigationController: self.navigationController as? NavigationController,
+                    forceExternal: forceExternal,
+                    openPeer: { [weak self] peerId, navigation in
+                        guard let self else { return }
+                        
+                        let dismissWebAppControllers: () -> Void = {
+                        }
+                        
+                        switch navigation {
+                        case let .chat(textInputState, subject, peekData):
+                            dismissWebAppControllers()
+                            if let navigationController = self.navigationController as? NavigationController {
+                                if case let .channel(channel) = peerId, channel.flags.contains(.isForum) {
+                                    self.context.sharedContext.navigateToForumChannel(context: self.context, peerId: peerId.id, navigationController: navigationController)
+                                } else {
+                                    self.context.sharedContext.navigateToChatController(NavigateToChatControllerParams(navigationController: navigationController, context: self.context, chatLocation: .peer(peerId), subject: subject, updateTextInputState: !peerId.id.isGroupOrChannel ? textInputState : nil, keepStack: .always, peekData: peekData))
+                                }
+                            }
+                            commit()
+                        case .info:
+                            dismissWebAppControllers()
+                            self.navigationActionDisposable.set((self.context.account.postbox.loadedPeerWithId(peerId.id)
+                                                                       |> take(1)
+                                                                       |> deliverOnMainQueue).startStrict(next: { [weak self] peer in
+                                if let self = self, peer.restrictionText(platform: "ios", contentSettings: self.context.currentContentSettings.with { $0 }) == nil {
+                                    if let infoController = self.context.sharedContext.makePeerInfoController(context: self.context, updatedPresentationData: self.updatedPresentationData, peer: peer, mode: .generic, avatarInitiallyExpanded: false, fromChat: false, requestsContext: nil) {
+                                        (self.navigationController as? NavigationController)?.pushViewController(infoController)
+                                    }
+                                }
+                            }))
+                            commit()
+                        case let .withBotStartPayload(startPayload):
+                            dismissWebAppControllers()
+                            if let navigationController = self.navigationController as? NavigationController {
+                                self.context.sharedContext.navigateToChatController(NavigateToChatControllerParams(navigationController: navigationController, context: self.context, chatLocation: .peer(peerId), botStart: startPayload, keepStack: .always))
+                            }
+                            commit()
+                        case let .withAttachBot(attachBotStart):
+                            dismissWebAppControllers()
+                            if let navigationController = self.navigationController as? NavigationController {
+                                self.context.sharedContext.navigateToChatController(NavigateToChatControllerParams(navigationController: navigationController, context: self.context, chatLocation: .peer(peerId), attachBotStart: attachBotStart))
+                            }
+                            commit()
+                        case let .withBotApp(botAppStart):
+                            let _ = (
+                                self.context.engine.data.get(TelegramEngine.EngineData.Item.Peer.Peer(id: peerId.id))
+                                |> deliverOnMainQueue
+                            ).startStandalone(next: { [weak self] peer in
+                                if let self = self,
+                                   let peer,
+                                   let botApp = botAppStart.botApp
+                                {
+                                    self.presentBotApp(
+                                        botApp: botApp,
+                                        botPeer: peer,
+                                        peerId: peer.id,
+                                        payload: botAppStart.payload,
+                                        compact: botAppStart.compact,
+                                        concealed: concealed,
+                                        commit: {
+                                            dismissWebAppControllers()
+                                            commit()
+                                        }
+                                    )
+                                }
+                            })
+                        default:
+                            break
+                        }
+                    },
+                    sendFile: nil,
+                    sendSticker: nil,
+                    sendEmoji: nil,
+                    requestMessageActionUrlAuth: nil,
+                    joinVoiceChat: nil,
+                    present: { [weak self] c, a in
+                        if c is UndoOverlayController {
+                            (self?.tabBarController?.selectedViewController as? ViewController)?.present(c, in: .current)
+                        } else {
+                            (self?.tabBarController?.selectedViewController as? ViewController)?.present(c, in: .window(.root), with: a)
+                        }
+                    },
+                    dismissInput: { [weak self] in
+                        self?.view.endEditing(true)
+                    },
+                    contentContext: nil,
+                    progress: progress,
+                    completion: nil
+                )
+            },
+            progress: progress
+        )
+        
+        self.navigationActionDisposable.set(disposable)
+    }
+    
+    func openApplication(url: String) {
+        self.openBotAppFromURL(
+            context: self.context,
+            url: url,
+            navigationController: self.navigationController as? NavigationController,
+            dismissInput: { [weak self] in
+                self?.view.endEditing(true)
+            }
+        )
     }
 }
 
