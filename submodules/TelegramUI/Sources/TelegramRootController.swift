@@ -243,13 +243,13 @@ public final class TelegramRootController: NavigationController, TelegramRootCon
         controllers.append(accountSettingsController)
         
         tabBarController.appsItemAndAction = (
-            UITabBarItem(title: presentationData.strings.TabBar_Apps, image: UIImage(named: "apps_icon", in: getAppBundle(), compatibleWith: nil)?.precomposed(), tag: 1),
+            UITabBarItem(title: presentationData.strings.TabBar_Apps, image: UIImage(named: "tab_apps", in: getAppBundle(), compatibleWith: nil), tag: 3),
             { [weak self] in
                 self?.openApplication(url: "https://t.me/tapps_bot/center")
             }
         )
-        tabBarController.appsItemAndAction = (
-            UITabBarItem(title: presentationData.strings.TabBar_Wallet, image: UIImage(named: "purse_icon", in: getAppBundle(), compatibleWith: nil)?.precomposed(), tag: 1),
+        tabBarController.cameraItemAndAction = (
+            UITabBarItem(title: presentationData.strings.TabBar_Wallet, image: UIImage(named: "tab_wallet", in: getAppBundle(), compatibleWith: nil), tag: 4),
             { [weak self] in
                 self?.openApplication(url: "https://t.me/wallet/start")
             }
@@ -828,7 +828,7 @@ public final class TelegramRootController: NavigationController, TelegramRootCon
         concealed: Bool = false,
         commit: @escaping () -> Void = {}
     ) {
-        if let navigationController = navigationController as? NavigationController,
+        if let navigationController = self.rootTabController?.currentController?.navigationController as? NavigationController,
            let minimizedContainer = navigationController.minimizedContainer
         {
             for controller in minimizedContainer.controllers {
@@ -898,7 +898,7 @@ public final class TelegramRootController: NavigationController, TelegramRootCon
                     
                     controller.navigationPresentation = .flatModal
                     
-                    (self.tabBarController?.selectedViewController as? ViewController)?.push(controller)
+                    self.rootTabController?.currentController?.push(controller)
                 }, error: { [weak self] error in
                     guard let self else { return }
                     
@@ -973,7 +973,7 @@ public final class TelegramRootController: NavigationController, TelegramRootCon
                                 })
                             }
                         )
-                        (self.tabBarController?.selectedViewController as? ViewController)?
+                        self.rootTabController?.currentController?
                             .present(controller, in: .window(.root))
                     } else {
                         openBotApp(false, false)
@@ -998,7 +998,7 @@ public final class TelegramRootController: NavigationController, TelegramRootCon
                         },
                         openTerms: {}
                     )
-                    (self.tabBarController?.selectedViewController as? ViewController)?
+                    self.rootTabController?.currentController?
                         .present(controller, in: .window(.root))
                 }
             } else {
@@ -1141,9 +1141,9 @@ public final class TelegramRootController: NavigationController, TelegramRootCon
                     joinVoiceChat: nil,
                     present: { [weak self] c, a in
                         if c is UndoOverlayController {
-                            (self?.tabBarController?.selectedViewController as? ViewController)?.present(c, in: .current)
+                            self?.rootTabController?.currentController?.present(c, in: .current)
                         } else {
-                            (self?.tabBarController?.selectedViewController as? ViewController)?.present(c, in: .window(.root), with: a)
+                            self?.rootTabController?.currentController?.present(c, in: .window(.root), with: a)
                         }
                     },
                     dismissInput: { [weak self] in
@@ -1164,7 +1164,7 @@ public final class TelegramRootController: NavigationController, TelegramRootCon
         self.openBotAppFromURL(
             context: self.context,
             url: url,
-            navigationController: self.navigationController as? NavigationController,
+            navigationController: self.rootTabController?.currentController?.navigationController as? NavigationController,
             dismissInput: { [weak self] in
                 self?.view.endEditing(true)
             }

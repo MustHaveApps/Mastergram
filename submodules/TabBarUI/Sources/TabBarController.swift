@@ -380,17 +380,10 @@ open class TabBarControllerImpl: ViewController, TabBarController {
         }
         
         var tabBarSelectedIndex = self.selectedIndex
-        if let (cameraItem, _) = self.cameraItemAndAction {
-            if let cameraItemIndex = self.tabBarControllerNode.tabBarNode.tabBarItems.firstIndex(where: { $0.item === cameraItem }) {
-                if tabBarSelectedIndex >= cameraItemIndex {
-                    tabBarSelectedIndex += 1
-                }
-            }
-        }
         if let (appsItem, _) = self.appsItemAndAction {
             if let appsItemIndex = self.tabBarControllerNode.tabBarNode.tabBarItems.firstIndex(where: { $0.item === appsItem }) {
                 if tabBarSelectedIndex >= appsItemIndex {
-                    tabBarSelectedIndex += 1
+                    tabBarSelectedIndex += 2
                 }
             }
         }
@@ -508,7 +501,7 @@ open class TabBarControllerImpl: ViewController, TabBarController {
         if let (cameraItem, _) = self.cameraItemAndAction {
             tabBarItems.insert(TabBarNodeItem(item: cameraItem, contextActionType: .none), at: Int(floor(CGFloat(controllers.count) / 2)))
         }
-        if let (appsItem, _) = self.cameraItemAndAction {
+        if let (appsItem, _) = self.appsItemAndAction {
             tabBarItems.insert(TabBarNodeItem(item: appsItem, contextActionType: .none), at: Int(floor(CGFloat(controllers.count) / 2)))
         }
         
