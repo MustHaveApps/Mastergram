@@ -239,8 +239,11 @@ public func PremiumBoostScreen(
                                         dismissImpl?()
                                         
                                         Queue.mainQueue().after(0.4) {
-                                            let controller = context.sharedContext.makePremiumGiftController(context: context, source: .channelBoost, completion: nil)
-                                            pushController(controller)
+                                            let controller = premiumAlertController(
+                                                context: context,
+                                                source: .groupsAndChannels
+                                            )
+                                            presentController(controller)
                                         }
                                     }),
                                     TextAlertAction(type: .genericAction, title: presentationData.strings.Common_Close, action: {})

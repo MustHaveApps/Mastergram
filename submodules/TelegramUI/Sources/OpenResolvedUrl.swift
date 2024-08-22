@@ -702,10 +702,11 @@ func openResolvedUrlImpl(
             }
         case let .premiumMultiGift(reference):
             dismissInput()
-            let controller = context.sharedContext.makePremiumGiftController(context: context, source: .deeplink(reference), completion: nil)
-            if let navigationController = navigationController {
-                navigationController.pushViewController(controller, animated: true)
-            }
+            let controller = premiumAlertController(
+                context: context,
+                source: .deeplink(reference)
+            )
+            (navigationController?.topViewController as? ViewController)?.present(controller, in: .window(.root))
         case let .starsTopup(amount, purpose):
             dismissInput()
             if let starsContext = context.starsContext {

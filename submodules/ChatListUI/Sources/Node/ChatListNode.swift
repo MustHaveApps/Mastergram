@@ -1725,9 +1725,11 @@ public final class ChatListNode: ListView {
             guard let self else {
                 return
             }
-            let controller = self.context.sharedContext.makePremiumGiftController(context: self.context, source: .chatList(birthdays), completion: nil)
-            controller.navigationPresentation = .modal
-            self.push?(controller)
+            let controller = premiumAlertController(
+                context: self.context,
+                source: .chatsPerFolder
+            )
+            self.present?(controller)
         }, openPremiumManagement: { [weak self] in
             guard let self else {
                 return

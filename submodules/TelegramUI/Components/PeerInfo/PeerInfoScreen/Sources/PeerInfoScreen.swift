@@ -10141,8 +10141,11 @@ final class PeerInfoScreenNode: ViewControllerTracingNode, PeerInfoScreenNodePro
                 guard let self else {
                     return
                 }
-                let controller = self.context.sharedContext.makePremiumGiftController(context: self.context, source: .settings(birthdays), completion: nil)
-                self.controller?.push(controller)
+                let controller = premiumAlertController(
+                    context: self.context,
+                    source: .settings
+                )
+                self.controller?.present(controller, in: .window(.root))
             })
         case .stickers:
             if let settings = self.data?.globalSettings {
