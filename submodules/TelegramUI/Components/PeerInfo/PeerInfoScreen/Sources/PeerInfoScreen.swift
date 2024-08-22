@@ -10251,7 +10251,10 @@ final class PeerInfoScreenNode: ViewControllerTracingNode, PeerInfoScreenNodePro
         case .powerSaving:
             push(energySavingSettingsScreen(context: self.context))
         case .businessSetup:
-            push(self.context.sharedContext.makeBusinessSetupScreen(context: self.context))
+            self.controller?.present(
+                self.context.sharedContext.makeBusinessSetupScreen(context: self.context),
+                in: .window(.root)
+            )
         case .premiumManagement:
             guard let controller = self.controller else {
                 return
